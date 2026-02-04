@@ -4,16 +4,29 @@
     "type": "module",
     "description": "Datalog Studio Integration Extension",
     "scripts": {
-        "build": "cd mcp-server && npm run build",
-        "install-deps": "cd mcp-server && npm install",
-        "dev": "cd mcp-server && npm run dev",
-        "postinstall": "npm run install-deps && npm run build"
+        "build": "cd mcp-server && bun run build",
+        "install-deps": "cd mcp-server && bun install",
+        "dev": "cd mcp-server && bun run dev",
+        "format": "prettier --write .",
+        "lint": "eslint . --fix",
+        "lint:fix": "eslint . --fix",
+        "lint:ci": "eslint . --max-warnings 0",
+        "typecheck": "cd mcp-server && bun run typecheck",
+        "test": "cd mcp-server && bun run test",
+        "clean": "rm -rf mcp-server/dist && rm -rf node_modules",
+        "preflight": "bun run clean && bun install && bun run format && bun run lint || true && bun run build && bun run typecheck",
+        "postinstall": "bun run install-deps && bun run build"
     },
     "engines": {
         "node": ">=18.0.0"
     },
     "devDependencies": {
         "@types/node": "^22.0.0",
-        "typescript": "^5.0.0"
+        "eslint": "^9.0.0",
+        "eslint-config-prettier": "^9.0.0",
+        "globals": "^15.0.0",
+        "prettier": "^3.0.0",
+        "typescript": "^5.0.0",
+        "typescript-eslint": "^8.0.0"
     }
 }

@@ -1,51 +1,48 @@
-# Datalog Studio MCP Server
+# Datalog Studio MCP Extension
 
-This MCP server allows you to integrate with the Datalog Studio REST API. It provides tools to explore projects, tables, columns, and assets, as well as tools to upload content.
+Professional MCP server for integrating Datalog Studio tasks into the Gemini CLI. Manage projects, tables, and assets using natural language.
 
 ## Features
 
-- **List Projects**: Discover available projects in your workspace.
-- **List Tables**: View collections and data structures within a project.
-- **List Columns**: Understand the schema and AI prompt templates for each table.
-- **List Assets**: See uploaded documents and files.
-- **Upload Content**: Push plain text directly into a collection for AI processing.
+- **Project Discovery**: List and find projects within your Datalog workspace.
+- **Schema Management**: Explore collections, columns, and AI prompt templates.
+- **Asset Control**: List uploaded documents and analyze data structures.
+- **Data Ingestion**: Direct plain text upload with optional AI transformation.
 
-## Setup
+## Quick Start
 
-### Environment Variables
+### 1. Prerequisites
 
-- `DATALOG_API_KEY`: Your Datalog Studio API Key (e.g., `catalog_ak_...`).
+- [Bun](https://bun.sh) runtime installed.
 
-### Installation
+### 2. Installation
+
+Install the extension and its dependencies:
 
 ```bash
-cd datalog-mcp-server
-npm install
-npm run build
+bun run install-deps
+bun run build
+gemini extensions install .
 ```
 
-## Integration with gemini-cli
+### 3. Configuration
 
-Add the following to your MCP configuration (e.g., `~/.config/gemini-cli/mcp.json` or similar):
+The extension requires a `DATALOG_API_KEY`. You will be prompted for this during installation, or you can set it as an environment variable.
 
-```json
-{
-  "mcpServers": {
-    "datalog": {
-      "command": "node",
-      "args": ["/absolute/path/to/datalog-mcp-server/dist/index.js"],
-      "env": {
-        "DATALOG_API_KEY": "YOUR_API_KEY"
-      }
-    }
-  }
-}
-```
+## Development
 
-## Tools
+Use the provided scripts for a professional development workflow:
 
-- `list_projects()`
-- `list_tables(project_id)`
-- `list_columns(project_name, collection_name)`
-- `list_assets(project_name, collection_name)`
-- `upload_text(project_name, collection_name, text, transform?)`
+- `bun run dev`: Start MCP server in watch mode.
+- `bun run lint`: Run ESLint to find and fix issues.
+- `bun run format`: Format code with Prettier.
+- `bun run typecheck`: Run TypeScript type checking.
+- `bun run preflight`: Run a full cleanup, install, lint, and build cycle.
+
+## Tools Summary
+
+- `list_projects()`: List all accessible projects.
+- `list_tables(project_id)`: List collections in a specific project.
+- `list_columns(project_name, collection_name)`: View table schema.
+- `list_assets(project_name, collection_name)`: List uploaded files.
+- `upload_text(project_name, collection_name, text, transform?)`: Ingest data.

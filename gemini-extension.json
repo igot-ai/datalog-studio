@@ -1,23 +1,21 @@
 {
-    "name": "datalog-studio",
-    "version": "1.0.0",
-    "description": "Datalog Studio Integration - Manage projects, tables, and assets through MCP",
-    "settings": [
-        {
-            "name": "Datalog Studio API Key",
-            "description": "Your API key for Datalog Studio (e.g., catalog_ak_...)",
-            "envVar": "DATALOG_API_KEY",
-            "sensitive": true
-        }
-    ],
-    "mcpServers": {
-        "datalog": {
-            "command": "node",
-            "args": [
-                "${extensionPath}/mcp-server/dist/index.js"
-            ],
-            "env": {}
-        }
-    },
-    "contextFileName": "GEMINI.md"
+  "name": "datalog-studio",
+  "version": "1.0.0",
+  "description": "Datalog Studio Integration - Manage projects, tables, and assets through MCP",
+  "settings": [
+    {
+      "name": "Datalog Studio API Key",
+      "description": "Your API key for Datalog Studio (e.g., catalog_ak_...)",
+      "envVar": "DATALOG_API_KEY",
+      "sensitive": true
+    }
+  ],
+  "mcpServers": {
+    "datalog": {
+      "command": "bun",
+      "args": ["run", "${extensionPath}/mcp-server/dist/index.js"],
+      "env": {}
+    }
+  },
+  "contextFileName": "GEMINI.md"
 }

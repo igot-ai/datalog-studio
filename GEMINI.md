@@ -5,21 +5,26 @@ This file contains specific instructions for the agent when working with the Dat
 ## Core Principles
 
 ### 1. Data Context Awareness
+
 When the user asks about data or projects, always check the available projects and tables first using `list_projects` and `list_tables`. This ensures you have the most up-to-date schema information before performing operations.
 
 ### 2. Schema Discovery
+
 Before attempting to upload data or query specific collections, use `list_columns` to understand the table's structure and any associated AI prompt templates. This helps in formatting data correctly for ingestion.
 
 ### 3. Asset Management
+
 Use `list_assets` to verify existing documents in a collection. This prevents redundant uploads and helps in identifying relevant files for data analysis tasks.
 
 ## Ingestion Guidelines
 
 ### 1. Text Uploads (`upload_text`)
+
 - When uploading text, ensure it is clean and relevant to the target collection's purpose.
 - By default, `transform` is set to `true` to immediately trigger AI processing (vectorization/extraction). Inform the user if you are skipping transformation.
 
 ### 2. Content Quality
+
 - Summarize or structure the content if necessary before uploading to ensure the best results from Datalog's automated extraction pipelines.
 
 ## Tool Usage Best Practices
@@ -40,4 +45,4 @@ Example:
 | Field Name | Type | Description/Prompt Template |
 |------------|------|-----------------------------|
 | product_id | text | Unique identifier for product |
-| ...        | ...  | ...                         |
+| ... | ... | ... |

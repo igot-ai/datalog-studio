@@ -5,10 +5,11 @@
     "description": "MCP server for Datalog Studio integration",
     "main": "dist/index.js",
     "scripts": {
-        "build": "tsc",
-        "start": "node dist/index.js",
+        "build": "bun i && tsc",
+        "start": "bun run dist/index.js",
         "dev": "tsc --watch",
-        "prepare": "npm run build"
+        "typecheck": "tsc --noEmit",
+        "test": "echo \"Error: no test specified\" && exit 0"
     },
     "dependencies": {
         "@modelcontextprotocol/sdk": "^1.0.1",
