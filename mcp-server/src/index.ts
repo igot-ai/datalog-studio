@@ -17,10 +17,7 @@ class DatalogServer {
     private datalogClient: DatalogClient;
 
     constructor() {
-        const apiKey = process.env.DATALOG_API_KEY;
-        if (!apiKey) {
-            throw new Error('DATALOG_API_KEY environment variable is required');
-        }
+        const apiKey = process.env.DATALOG_API_KEY || '';
         this.datalogClient = new DatalogClient(apiKey);
 
         this.server = new Server(
@@ -134,6 +131,17 @@ class DatalogServer {
 
         this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
             const { name, arguments: args } = request.params;
+
+            // Validate API key exists before execution
+            if (!process.env.DATALOG_API_KEY) {
+                return {
+                    content: [{
+                        type: 'text',
+                        text: 'Error: DATALOG_API_KEY is not set. Please configure your API key in settings or as an environment variable.'
+                    }],
+                    isError: true,
+                };
+            }
 
             try {
                 switch (name) {
