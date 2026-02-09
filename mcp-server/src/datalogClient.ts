@@ -6,7 +6,9 @@ import { Project, Table, Column, Asset } from './types.js';
 export class DataStudioClient {
   private client: AxiosInstance;
 
-  constructor(apiKey: string, baseUrl: string = 'https://studio.igot.ai/v1/catalog') {
+  constructor(apiKey: string, apiDomain: string, apiUri: string) {
+    const baseUrl = `${apiDomain.replace(/\/$/, '')}${apiUri.startsWith('/') ? apiUri : '/' + apiUri}`;
+
     this.client = axios.create({
       baseURL: baseUrl,
       headers: {

@@ -15,7 +15,9 @@ class DataStudioServer {
 
   constructor() {
     const apiKey = process.env.DATALOG_API_KEY || '';
-    this.dataClient = new DataStudioClient(apiKey);
+    const domain = process.env.DATALOG_API || 'https://studio.igot.ai';
+    const uri = process.env.DATALOG_URI || '/v1/catalog';
+    this.dataClient = new DataStudioClient(apiKey, domain, uri);
 
     this.server = new Server(
       {

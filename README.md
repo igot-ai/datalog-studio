@@ -27,7 +27,11 @@ gemini extensions install .
 
 ### 3. Configuration
 
-The extension requires a `DATALOG_API_KEY`. You will be prompted for this during installation, or you can set it as an environment variable.
+The extension requires a `DATALOG_API_KEY`. By default, it connects to `https://studio.igot.ai/v1/catalog`. 
+
+For custom enterprise installations, you can configure the endpoint using:
+- `DATALOG_API`: The domain endpoint (e.g., `https://enterprise.com`).
+- `CATALOG_URI`: The API path suffix (e.g., `/v1/catalog`).
 
 ## Development
 
