@@ -1,11 +1,36 @@
-import { Project, Table, Column, Asset } from './types.js';
+import { Project, Table, Column, Asset, AddColumnRequest, TableUpdateRequest, ColumnUpdateRequest, AssetColumnValueUpdateRequest, CreateAssetsOptions, AssetContent, AssetColumnValue, TableFilesResponse } from './types.js';
 export declare class DataStudioClient {
     private client;
-    constructor(apiKey: string, baseUrl?: string);
+    constructor(apiKey: string, apiDomain: string, apiUri: string);
     listCatalogs(): Promise<Project[]>;
     listCollections(catalogId: string): Promise<Table[]>;
     listAttributes(catalogName: string, collectionName: string): Promise<Column[]>;
+    addColumn(catalogName: string, collectionName: string, columnData: AddColumnRequest): Promise<any>;
+    addColumns(catalogName: string, collectionName: string, columnsData: AddColumnRequest[]): Promise<any>;
     listDataAssets(catalogName: string, collectionName: string): Promise<Asset[]>;
     uploadFile(catalogName: string, collectionName: string, filePath: string, transform?: boolean): Promise<any>;
     ingestData(catalogName: string, collectionName: string, text: string, transform?: boolean): Promise<any>;
+    getTableJsonSchema(tableId: string): Promise<any>;
+    updateTable(tableId: string, info: TableUpdateRequest): Promise<Table>;
+    deleteTable(tableId: string): Promise<boolean>;
+    listAssets(tableId: string, page?: number, limit?: number): Promise<Asset[]>;
+    getAssetsCount(tableId: string): Promise<number>;
+    getAssetContent(tableId: string, assetId: string): Promise<AssetContent>;
+    createAssets(tableId: string, filePaths?: string[], options?: CreateAssetsOptions): Promise<any>;
+    deleteAsset(tableId: string, assetId: string): Promise<boolean>;
+    getColumns(tableId: string): Promise<Column[]>;
+    getColumnsCount(tableId: string): Promise<number>;
+    createColumn(tableId: string, info: AddColumnRequest): Promise<any>;
+    createColumnsBulk(tableId: string, info: AddColumnRequest[]): Promise<any>;
+    updateColumn(tableId: string, info: ColumnUpdateRequest): Promise<any>;
+    deleteColumn(tableId: string, columnId: string): Promise<boolean>;
+    getAssetColumnValues(tableId: string): Promise<AssetColumnValue[]>;
+    getAssetColumnByAssets(tableId: string, assetIds: string[]): Promise<AssetColumnValue[]>;
+    updateAssetColumnValue(tableId: string, assetId: string, columnId: string, info: AssetColumnValueUpdateRequest): Promise<any>;
+    deleteAssetColumn(tableId: string): Promise<boolean>;
+    exportJson(tableId: string): Promise<any>;
+    exportCsv(tableId: string): Promise<string>;
+    exportExcel(tableId: string): Promise<Buffer>;
+    getTablesFiles(q?: string): Promise<TableFilesResponse[]>;
+    getTableFiles(tableId: string, limit?: number): Promise<TableFilesResponse>;
 }

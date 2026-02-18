@@ -2,7 +2,8 @@ import axios from 'axios';
 import FormData from 'form-data';
 import * as fs from 'fs';
 export class DataStudioClient {
-    constructor(apiKey, baseUrl = 'https://studio.igot.ai/v1/catalog') {
+    constructor(apiKey, apiDomain, apiUri) {
+        const baseUrl = `${apiDomain.replace(/\/$/, '')}${apiUri.startsWith('/') ? apiUri : '/' + apiUri}`;
         this.client = axios.create({
             baseURL: baseUrl,
             headers: {
@@ -13,6 +14,7 @@ export class DataStudioClient {
             },
         });
     }
+    // ─── Existing Project/Catalog Methods ──────────────────────────────
     async listCatalogs() {
         const response = await this.client.get('/projects', {
             params: { limit: 100 },
@@ -25,10 +27,20 @@ export class DataStudioClient {
         });
         return response.data;
     }
+    // ─── Column Methods (by name) ──────────────────────────────────────
     async listAttributes(catalogName, collectionName) {
         const response = await this.client.get(`/columns/${catalogName}/${collectionName}`);
         return response.data;
     }
+    async addColumn(catalogName, collectionName, columnData) {
+        const response = await this.client.post(`/columns/${catalogName}/${collectionName}`, columnData);
+        return response.data;
+    }
+    async addColumns(catalogName, collectionName, columnsData) {
+        const response = await this.client.post(`/columns/${catalogName}/${collectionName}/bulk`, columnsData);
+        return response.data;
+    }
+    // ─── Asset Methods (by name — existing) ────────────────────────────
     async listDataAssets(catalogName, collectionName) {
         const response = await this.client.get(`/assets/${catalogName}/${collectionName}`);
         return response.data;
@@ -48,6 +60,132 @@ export class DataStudioClient {
         const response = await this.client.post(`/upload/${catalogName}/${collectionName}`, form, {
             params: { transform },
             headers: { ...form.getHeaders() },
+        });
+        return response.data;
+    }
+    // ─── Table Management (by table_id) ────────────────────────────────
+    async getTableJsonSchema(tableId) {
+        const response = await this.client.get(`/tables/${tableId}/json`);
+        return response.data;
+    }
+    async updateTable(tableId, info) {
+        const response = await this.client.put(`/tables/${tableId}`, info);
+        return response.data;
+    }
+    async deleteTable(tableId) {
+        const response = await this.client.delete(`/tables/${tableId}`);
+        return response.data;
+    }
+    // ─── Asset Management (by table_id) ────────────────────────────────
+    async listAssets(tableId, page = 1, limit = 10) {
+        const response = await this.client.get(`/tables/${tableId}/assets`, {
+            params: { page, limit },
+        });
+        return response.data;
+    }
+    async getAssetsCount(tableId) {
+        const response = await this.client.get(`/tables/${tableId}/assets/count`);
+        return response.data;
+    }
+    async getAssetContent(tableId, assetId) {
+        const response = await this.client.get(`/tables/${tableId}/assets/${assetId}`);
+        return response.data;
+    }
+    async createAssets(tableId, filePaths = [], options = {}) {
+        const form = new FormData();
+        for (const filePath of filePaths) {
+            form.append('upload_files', fs.createReadStream(filePath));
+        }
+        if (options.plainText) {
+            form.append('plain_text', options.plainText);
+        }
+        if (options.sourceId) {
+            form.append('source_id', options.sourceId);
+        }
+        if (options.columnStaticData) {
+            form.append('column_static_data', JSON.stringify(options.columnStaticData));
+        }
+        const response = await this.client.post(`/tables/${tableId}/assets`, form, {
+            params: { transform: options.transform ?? false },
+            headers: { ...form.getHeaders() },
+        });
+        return response.data;
+    }
+    async deleteAsset(tableId, assetId) {
+        const response = await this.client.delete(`/tables/${tableId}/assets/${assetId}`);
+        return response.data;
+    }
+    // ─── Column Management (by table_id) ───────────────────────────────
+    async getColumns(tableId) {
+        const response = await this.client.get(`/tables/${tableId}/columns`);
+        return response.data;
+    }
+    async getColumnsCount(tableId) {
+        const response = await this.client.get(`/tables/${tableId}/columns/count`);
+        return response.data;
+    }
+    async createColumn(tableId, info) {
+        const response = await this.client.post(`/tables/${tableId}/columns`, info);
+        return response.data;
+    }
+    async createColumnsBulk(tableId, info) {
+        const response = await this.client.post(`/tables/${tableId}/columns/bulk`, info);
+        return response.data;
+    }
+    async updateColumn(tableId, info) {
+        const response = await this.client.put(`/tables/${tableId}/columns`, info);
+        return response.data;
+    }
+    async deleteColumn(tableId, columnId) {
+        const response = await this.client.delete(`/tables/${tableId}/columns/${columnId}`);
+        return response.data;
+    }
+    // ─── Data / Asset-Column Values ────────────────────────────────────
+    async getAssetColumnValues(tableId) {
+        const response = await this.client.get(`/tables/${tableId}/asset_column`);
+        return response.data;
+    }
+    async getAssetColumnByAssets(tableId, assetIds) {
+        const response = await this.client.get(`/tables/${tableId}/data_assets`, {
+            params: { asset_ids: assetIds },
+        });
+        return response.data;
+    }
+    async updateAssetColumnValue(tableId, assetId, columnId, info) {
+        const response = await this.client.put(`/tables/${tableId}/assets/${assetId}/columns/${columnId}/value_data`, info);
+        return response.data;
+    }
+    async deleteAssetColumn(tableId) {
+        const response = await this.client.delete(`/tables/${tableId}/asset_column`);
+        return response.data;
+    }
+    // ─── Export ────────────────────────────────────────────────────────
+    async exportJson(tableId) {
+        const response = await this.client.get(`/tables/${tableId}/export/json`);
+        return response.data;
+    }
+    async exportCsv(tableId) {
+        const response = await this.client.get(`/tables/${tableId}/export/csv`, {
+            responseType: 'text',
+        });
+        return response.data;
+    }
+    async exportExcel(tableId) {
+        const response = await this.client.get(`/tables/${tableId}/export/excel`, {
+            responseType: 'arraybuffer',
+        });
+        return response.data;
+    }
+    // ─── Files ─────────────────────────────────────────────────────────
+    async getTablesFiles(q) {
+        const response = await this.client.get('/tables/files', {
+            params: q ? { q } : {},
+        });
+        return response.data;
+    }
+    async getTableFiles(tableId, limit = 5) {
+        const response = await this.client.get(`/tables/${tableId}/files`, {
+            params: { limit },
         });
         return response.data;
     }
