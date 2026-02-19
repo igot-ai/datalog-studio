@@ -21,10 +21,18 @@ export class DataStudioClient {
         });
         return response.data;
     }
+    async createProject(projectData) {
+        const response = await this.client.post('/projects', projectData);
+        return response.data;
+    }
     async listCollections(catalogId) {
         const response = await this.client.get(`/projects/${catalogId}/tables`, {
             params: { limit: 200 },
         });
+        return response.data;
+    }
+    async createTable(catalogId, tableData) {
+        const response = await this.client.post(`/projects/${catalogId}/tables`, tableData);
         return response.data;
     }
     // ─── Column Methods (by name) ──────────────────────────────────────

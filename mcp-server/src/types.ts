@@ -11,6 +11,15 @@ export interface Project {
   updated_at: string;
 }
 
+export interface CreateProjectDTO {
+  name: string;
+  title: string;
+  description?: string;
+  project_type: 'DATA' | 'ONTOLOGY';
+  domain?: string;
+  tags?: string[];
+}
+
 export interface Table {
   id: string;
   project_id: string;
@@ -20,6 +29,17 @@ export interface Table {
   status: string;
   created_at: string;
   updated_at: string;
+}
+
+export interface CreateTableDTO {
+  project_id: string;
+  name: string;
+  table_type?: string;
+  description?: string;
+  status?: string;
+  model_transform?: string;
+  language?: string;
+  model_reasoning?: string;
 }
 
 export interface Column {

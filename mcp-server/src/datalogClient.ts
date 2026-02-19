@@ -14,6 +14,8 @@ import {
   AssetContent,
   AssetColumnValue,
   TableFilesResponse,
+  CreateProjectDTO,
+  CreateTableDTO,
 } from './types.js';
 
 export class DataStudioClient {
@@ -42,10 +44,20 @@ export class DataStudioClient {
     return response.data;
   }
 
+  async createProject(projectData: CreateProjectDTO): Promise<Project> {
+    const response = await this.client.post('/projects', projectData);
+    return response.data;
+  }
+
   async listCollections(catalogId: string): Promise<Table[]> {
     const response = await this.client.get(`/projects/${catalogId}/tables`, {
       params: { limit: 200 },
     });
+    return response.data;
+  }
+
+  async createTable(catalogId: string, tableData: CreateTableDTO): Promise<Table> {
+    const response = await this.client.post(`/projects/${catalogId}/tables`, tableData);
     return response.data;
   }
 

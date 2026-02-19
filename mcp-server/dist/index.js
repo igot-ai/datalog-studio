@@ -37,6 +37,88 @@ class DataStudioServer {
                         },
                     },
                     {
+                        name: 'create_project',
+                        description: 'Create a new data catalog project',
+                        inputSchema: {
+                            type: 'object',
+                            properties: {
+                                name: {
+                                    type: 'string',
+                                    description: 'The slug of the project title (e.g., "my-project")',
+                                },
+                                title: {
+                                    type: 'string',
+                                    description: 'The display title of the project',
+                                },
+                                description: {
+                                    type: 'string',
+                                    description: 'Optional description of the project',
+                                },
+                                project_type: {
+                                    type: 'string',
+                                    description: 'Type of project (DATA or ONTOLOGY)',
+                                    enum: ['DATA', 'ONTOLOGY'],
+                                },
+                                domain: {
+                                    type: 'string',
+                                    description: 'Optional vertical domain or department',
+                                },
+                                tags: {
+                                    type: 'array',
+                                    items: { type: 'string' },
+                                    description: 'Optional data tags',
+                                },
+                            },
+                            required: ['name', 'title', 'project_type'],
+                        },
+                    },
+                    {
+                        name: 'create_table',
+                        description: 'Create a new table within a specific catalog',
+                        inputSchema: {
+                            type: 'object',
+                            properties: {
+                                project_id: {
+                                    type: 'string',
+                                    description: 'The UUID of the catalog (project)',
+                                },
+                                name: {
+                                    type: 'string',
+                                    description: 'Name of the table',
+                                },
+                                table_type: {
+                                    type: 'string',
+                                    description: 'Type of table (default: TABLE)',
+                                    default: 'TABLE',
+                                },
+                                description: {
+                                    type: 'string',
+                                    description: 'Optional description of the table',
+                                },
+                                status: {
+                                    type: 'string',
+                                    description: 'Status of the table (default: DRAFT)',
+                                    default: 'DRAFT',
+                                },
+                                model_transform: {
+                                    type: 'string',
+                                    description: 'AI transform model (FLASH, BASIC, MAX)',
+                                    default: 'FLASH',
+                                },
+                                language: {
+                                    type: 'string',
+                                    description: 'Language of the content (default: English)',
+                                    default: 'English',
+                                },
+                                model_reasoning: {
+                                    type: 'string',
+                                    description: 'Optional reasoning model for BASIC',
+                                },
+                            },
+                            required: ['project_id', 'name'],
+                        },
+                    },
+                    {
                         name: 'list_collections',
                         description: 'List all collections (master data tables) within a specific catalog',
                         inputSchema: {
@@ -722,6 +804,19 @@ class DataStudioServer {
                         const catalogs = await this.dataClient.listCatalogs();
                         return {
                             content: [{ type: 'text', text: JSON.stringify(catalogs, null, 2) }],
+                        };
+                    }
+                    case 'create_project': {
+                        const project = await this.dataClient.createProject(args);
+                        return {
+                            content: [{ type: 'text', text: `Project created successfully: ${JSON.stringify(project, null, 2)}` }],
+                        };
+                    }
+                    case 'create_table': {
+                        const { project_id, ...tableData } = args;
+                        const table = await this.dataClient.createTable(project_id, args);
+                        return {
+                            content: [{ type: 'text', text: `Table created successfully: ${JSON.stringify(table, null, 2)}` }],
                         };
                     }
                     case 'list_collections': {
