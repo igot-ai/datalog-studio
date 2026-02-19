@@ -31,6 +31,5 @@ export declare class DataStudioClient {
     exportJson(tableId: string): Promise<any>;
     exportCsv(tableId: string): Promise<string>;
     exportExcel(tableId: string): Promise<Buffer>;
-    getTablesFiles(q?: string): Promise<TableFilesResponse[]>;
     getTableFiles(tableId: string, limit?: number): Promise<TableFilesResponse>;
 }

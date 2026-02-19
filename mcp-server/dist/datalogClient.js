@@ -84,7 +84,7 @@ export class DataStudioClient {
         return response.data;
     }
     async getAssetsCount(tableId) {
-        const response = await this.client.get(`/tables/${tableId}/assets/count`);
+        const response = await this.client.get(`/projects/${tableId}/tables/count`);
         return response.data;
     }
     async getAssetContent(tableId, assetId) {
@@ -177,12 +177,6 @@ export class DataStudioClient {
         return response.data;
     }
     // ─── Files ─────────────────────────────────────────────────────────
-    async getTablesFiles(q) {
-        const response = await this.client.get('/tables/files', {
-            params: q ? { q } : {},
-        });
-        return response.data;
-    }
     async getTableFiles(tableId, limit = 5) {
         const response = await this.client.get(`/tables/${tableId}/files`, {
             params: { limit },

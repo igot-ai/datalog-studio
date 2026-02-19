@@ -680,19 +680,6 @@ class DataStudioServer {
                     },
                     // ─── Files ──────────────────────────────────────────────
                     {
-                        name: 'get_tables_files',
-                        description: 'List files across all accessible tables, with optional search',
-                        inputSchema: {
-                            type: 'object',
-                            properties: {
-                                q: {
-                                    type: 'string',
-                                    description: 'Optional search query to filter by project or table name',
-                                },
-                            },
-                        },
-                    },
-                    {
                         name: 'get_table_files',
                         description: 'List files for a specific table',
                         inputSchema: {
@@ -916,12 +903,6 @@ class DataStudioServer {
                         };
                     }
                     // ─── Files ──────────────────────────────────────────
-                    case 'get_tables_files': {
-                        const files = await this.dataClient.getTablesFiles(args?.q);
-                        return {
-                            content: [{ type: 'text', text: JSON.stringify(files, null, 2) }],
-                        };
-                    }
                     case 'get_table_files': {
                         const files = await this.dataClient.getTableFiles(args?.table_id, args?.limit);
                         return {

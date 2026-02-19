@@ -146,7 +146,7 @@ export class DataStudioClient {
   }
 
   async getAssetsCount(tableId: string): Promise<number> {
-    const response = await this.client.get(`/tables/${tableId}/assets/count`);
+    const response = await this.client.get(`/projects/${tableId}/tables/count`);
     return response.data;
   }
 
