@@ -2,7 +2,7 @@ import axios from 'axios';
 import FormData from 'form-data';
 import * as fs from 'fs';
 export class DataStudioClient {
-    constructor(apiKey, apiDomain, apiUri) {
+    constructor(apiKey, apiDomain, apiUri, session) {
         const baseUrl = `${apiDomain.replace(/\/$/, '')}${apiUri.startsWith('/') ? apiUri : '/' + apiUri}`;
         this.client = axios.create({
             baseURL: baseUrl,
@@ -11,6 +11,7 @@ export class DataStudioClient {
                 'Content-Type': 'application/json',
                 Accept: 'application/json',
                 'x-request-source': 'web',
+                ...(session ? { 'X-Streaming-Channel': session } : {}),
             },
         });
     }

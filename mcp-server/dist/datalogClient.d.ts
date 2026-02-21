@@ -1,7 +1,7 @@
 import { Project, Table, Column, Asset, AddColumnRequest, TableUpdateRequest, ColumnUpdateRequest, AssetColumnValueUpdateRequest, CreateAssetsOptions, AssetContent, AssetColumnValue, TableFilesResponse, CreateProjectDTO, CreateTableDTO } from './types.js';
 export declare class DataStudioClient {
     private client;
-    constructor(apiKey: string, apiDomain: string, apiUri: string);
+    constructor(apiKey: string, apiDomain: string, apiUri: string, session: string);
     listCatalogs(): Promise<Project[]>;
     createProject(projectData: CreateProjectDTO): Promise<Project>;
     listCollections(catalogId: string): Promise<Table[]>;
