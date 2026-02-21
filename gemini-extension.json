@@ -20,6 +20,12 @@
       "description": "The URI suffix for the Catalog API (optional, defaults to /v1/catalog)",
       "envVar": "DATALOG_URI",
       "sensitive": false
+    },
+    {
+      "name": "Session ID",
+      "description": "The session ID for the Catalog API",
+      "envVar": "SESSION_ID",
+      "sensitive": false
     }
   ],
   "mcpServers": {

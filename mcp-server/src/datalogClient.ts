@@ -21,7 +21,7 @@ import {
 export class DataStudioClient {
   private client: AxiosInstance;
 
-  constructor(apiKey: string, apiDomain: string, apiUri: string) {
+  constructor(apiKey: string, apiDomain: string, apiUri: string, session: string) {
     const baseUrl = `${apiDomain.replace(/\/$/, '')}${apiUri.startsWith('/') ? apiUri : '/' + apiUri}`;
 
     this.client = axios.create({
@@ -31,6 +31,7 @@ export class DataStudioClient {
         'Content-Type': 'application/json',
         Accept: 'application/json',
         'x-request-source': 'web',
+        'X-Streaming-Channel': session,
       },
     });
   }
