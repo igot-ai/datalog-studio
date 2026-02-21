@@ -17,7 +17,7 @@ class DataStudioServer {
     const apiKey = process.env.DATALOG_API_KEY || '';
     const domain = process.env.DATALOG_API || 'https://studio.igot.ai';
     const uri = process.env.DATALOG_URI || '/v1/catalog';
-    const session = process.env.SESSION_ID || '';
+    const session = process.env.E2B_SANDBOX_ID || '';
     this.dataClient = new DataStudioClient(apiKey, domain, uri, session);
 
     this.server = new Server(
