@@ -93,7 +93,7 @@ class DataStudioServer {
                                 },
                                 table_type: {
                                     type: 'string',
-                                    description: 'Type of table (default: TABLE)',
+                                    description: 'Type of table (default: TABLE | AGENT)',
                                     default: 'TABLE',
                                 },
                                 description: {
@@ -102,25 +102,25 @@ class DataStudioServer {
                                 },
                                 status: {
                                     type: 'string',
-                                    description: 'Status of the table (default: DRAFT)',
+                                    description: 'Status of the table (default: DRAFT | PROD)',
                                     default: 'DRAFT',
                                 },
                                 model_transform: {
                                     type: 'string',
-                                    description: 'AI transform model (FLASH, BASIC, MAX)',
+                                    description: 'AI transform model (default: FLASH | BASIC | MAX)',
                                     default: 'FLASH',
                                 },
                                 language: {
                                     type: 'string',
-                                    description: 'Language of the content (default: English)',
+                                    description: 'Language of the content (default: English | Vietnamese)',
                                     default: 'English',
                                 },
                                 model_reasoning: {
                                     type: 'string',
-                                    description: 'Optional reasoning model for BASIC',
+                                    description: 'Optional reasoning model for BASIC | FLASH | MAX',
                                 },
                             },
-                            required: ['project_id', 'name'],
+                            required: ['project_id', 'name', 'table_type', 'status', 'model_transform', 'language', 'model_reasoning'],
                         },
                     },
                     {
@@ -222,7 +222,7 @@ class DataStudioServer {
                                 },
                                 data_type: {
                                     type: 'string',
-                                    description: 'Data type (number, text, boolean, datetime, table, table_markdown, json, markdown, static, agent)',
+                                    description: 'Data type (number, text, boolean, datetime, table, table_markdown, json, markdown, static, agent). `stataic` would be the variable assigned to the asset when we can determine this column from the original source.',
                                     enum: [
                                         'number',
                                         'text',
@@ -318,7 +318,7 @@ class DataStudioServer {
                                             },
                                             prompt_template: {
                                                 type: 'string',
-                                                description: 'AI task description or static value. Reference other columns using {{column_name}} syntax',
+                                                description: 'AI task description or static value. Reference other columns using {{column_name}} syntax. For static data type, this would be the value of the column can be determined from the original source.',
                                             },
                                             agent_id: {
                                                 type: 'string',
