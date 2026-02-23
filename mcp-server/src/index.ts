@@ -57,7 +57,9 @@ class DataStudioServer {
               properties: {
                 name: {
                   type: 'string',
-                  description: 'The slug of the project title (e.g., "my-project")',
+                  description: 'The slug of the project title (e.g., "my-project"). Length 2-64.',
+                  minLength: 2,
+                  maxLength: 64,
                 },
                 title: {
                   type: 'string',
@@ -97,7 +99,9 @@ class DataStudioServer {
                 },
                 name: {
                   type: 'string',
-                  description: 'Name of the table. Allow lowercase letters, numbers and underscore (_) only. Length between 6-99 characters. Must start with a letter.',
+                  description: 'Name of the table. Allow lowercase letters, numbers and underscore (_) only. Length between 2-64 characters. Must start with a letter.',
+                  minLength: 2,
+                  maxLength: 64,
                 },
                 table_type: {
                   type: 'string',
@@ -224,7 +228,9 @@ class DataStudioServer {
                 },
                 name: {
                   type: 'string',
-                  description: 'Unique name for the column (alphanumeric, underscores). Length 6-99.',
+                  description: 'Unique name for the column (alphanumeric, underscores). Length 2-64.',
+                  minLength: 2,
+                  maxLength: 64,
                 },
                 data_type: {
                   type: 'string',
@@ -375,7 +381,9 @@ class DataStudioServer {
                 },
                 name: {
                   type: 'string',
-                  description: 'New name for the table',
+                  description: 'New name for the table. Length 2-64.',
+                  minLength: 2,
+                  maxLength: 64,
                 },
                 description: {
                   type: 'string',
@@ -556,7 +564,9 @@ class DataStudioServer {
                 },
                 name: {
                   type: 'string',
-                  description: 'Column name. Length 6-99.',
+                  description: 'Column name. Length 2-64.',
+                  minLength: 2,
+                  maxLength: 64,
                 },
                 data_type: {
                   type: 'string',
@@ -598,7 +608,7 @@ class DataStudioServer {
                   items: {
                     type: 'object',
                     properties: {
-                      name: { type: 'string', description: 'Column name. Length 6-99.' },
+                      name: { type: 'string', description: 'Column name. Length 2-64.', minLength: 2, maxLength: 64 },
                       data_type: {
                         type: 'string',
                         enum: ['number', 'text', 'boolean', 'datetime', 'table', 'table_markdown', 'json', 'markdown', 'static', 'agent'],
@@ -630,7 +640,7 @@ class DataStudioServer {
                   type: 'string',
                   description: 'The column ID to update',
                 },
-                name: { type: 'string', description: 'New column name. Length 6-99.' },
+                name: { type: 'string', description: 'New column name. Length 2-64.', minLength: 2, maxLength: 64 },
                 data_type: { type: 'string', description: 'New data type' },
                 content_location: { type: 'string', description: 'New alignment' },
                 scan_ranges: { type: 'array', items: { type: 'string' } },
