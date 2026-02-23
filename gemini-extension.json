@@ -22,9 +22,9 @@
       "sensitive": false
     },
     {
-      "name": "Session ID",
-      "description": "The session ID for the Catalog API",
-      "envVar": "SESSION_ID",
+      "name": "E2B_SANDBOX_ID",
+      "description": "The E2B_SANDBOX_ID for the Catalog API",
+      "envVar": "E2B_SANDBOX_ID",
       "sensitive": false
     }
   ],

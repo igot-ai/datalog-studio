@@ -97,7 +97,7 @@ class DataStudioServer {
                 },
                 name: {
                   type: 'string',
-                  description: 'Name of the table',
+                  description: 'Name of the table. Allow lowercase letters, numbers and underscore (_) only. Length between 6-99 characters. Must start with a letter.',
                 },
                 table_type: {
                   type: 'string',
@@ -224,7 +224,7 @@ class DataStudioServer {
                 },
                 name: {
                   type: 'string',
-                  description: 'Unique name for the column (alphanumeric, underscores)',
+                  description: 'Unique name for the column (alphanumeric, underscores). Length 6-99.',
                 },
                 data_type: {
                   type: 'string',
@@ -254,7 +254,7 @@ class DataStudioServer {
                 },
                 prompt_template: {
                   type: 'string',
-                  description: 'AI task description or static value',
+                  description: 'AI task description or static value. Reference other columns using {{column_name}} syntax',
                 },
                 agent_id: {
                   type: 'string',
@@ -270,7 +270,7 @@ class DataStudioServer {
                   },
                 },
               },
-              required: ['catalog_name', 'collection_name', 'name', 'data_type', 'content_location', 'scan_ranges'],
+              required: ['catalog_name', 'collection_name', 'name', 'data_type', 'content_location', 'scan_ranges', 'prompt_template'],
             },
           },
           {
@@ -324,7 +324,7 @@ class DataStudioServer {
                       },
                       prompt_template: {
                         type: 'string',
-                        description: 'AI task description or static value',
+                        description: 'AI task description or static value. Reference other columns using {{column_name}} syntax',
                       },
                       agent_id: {
                         type: 'string',
@@ -340,7 +340,7 @@ class DataStudioServer {
                         },
                       },
                     },
-                    required: ['name', 'data_type', 'content_location', 'scan_ranges'],
+                    required: ['name', 'data_type', 'content_location', 'scan_ranges', 'prompt_template'],
                   },
                 },
               },
@@ -556,7 +556,7 @@ class DataStudioServer {
                 },
                 name: {
                   type: 'string',
-                  description: 'Column name',
+                  description: 'Column name. Length 6-99.',
                 },
                 data_type: {
                   type: 'string',
@@ -573,14 +573,14 @@ class DataStudioServer {
                   items: { type: 'string' },
                   description: 'Pages or ranges to scan',
                 },
-                prompt_template: { type: 'string', description: 'AI task description' },
+                prompt_template: { type: 'string', description: 'AI task description. Reference other columns using {{column_name}} syntax' },
                 agent_id: { type: 'string', description: 'Agent ID if data_type is agent' },
                 config: {
                   type: 'object',
                   properties: { multi_hop: { type: 'number' } },
                 },
               },
-              required: ['table_id', 'name', 'data_type', 'content_location', 'scan_ranges'],
+              required: ['table_id', 'name', 'data_type', 'content_location', 'scan_ranges', 'prompt_template'],
             },
           },
           {
@@ -598,18 +598,18 @@ class DataStudioServer {
                   items: {
                     type: 'object',
                     properties: {
-                      name: { type: 'string' },
+                      name: { type: 'string', description: 'Column name. Length 6-99.' },
                       data_type: {
                         type: 'string',
                         enum: ['number', 'text', 'boolean', 'datetime', 'table', 'table_markdown', 'json', 'markdown', 'static', 'agent'],
                       },
                       content_location: { type: 'string', default: 'top-left' },
                       scan_ranges: { type: 'array', items: { type: 'string' } },
-                      prompt_template: { type: 'string' },
+                      prompt_template: { type: 'string', description: 'AI task description. Reference other columns using {{column_name}} syntax' },
                       agent_id: { type: 'string' },
                       config: { type: 'object', properties: { multi_hop: { type: 'number' } } },
                     },
-                    required: ['name', 'data_type', 'content_location', 'scan_ranges'],
+                    required: ['name', 'data_type', 'content_location', 'scan_ranges', 'prompt_template'],
                   },
                 },
               },
@@ -630,11 +630,11 @@ class DataStudioServer {
                   type: 'string',
                   description: 'The column ID to update',
                 },
-                name: { type: 'string', description: 'New column name' },
+                name: { type: 'string', description: 'New column name. Length 6-99.' },
                 data_type: { type: 'string', description: 'New data type' },
                 content_location: { type: 'string', description: 'New alignment' },
                 scan_ranges: { type: 'array', items: { type: 'string' } },
-                prompt_template: { type: 'string' },
+                prompt_template: { type: 'string', description: 'AI task description. Reference other columns using {{column_name}} syntax' },
                 agent_id: { type: 'string' },
                 config: { type: 'object', properties: { multi_hop: { type: 'number' } } },
               },
