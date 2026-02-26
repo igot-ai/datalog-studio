@@ -16,6 +16,10 @@ import {
   TableFilesResponse,
   CreateProjectDTO,
   CreateTableDTO,
+  ProjectMember,
+  AssignProjectMemberRequest,
+  UpdateProjectMemberRoleRequest,
+  CreateCatalogInvitationRequest,
 } from './types.js';
 
 export class DataStudioClient {
@@ -46,6 +50,30 @@ export class DataStudioClient {
 
   async createProject(projectData: CreateProjectDTO): Promise<Project> {
     const response = await this.client.post('/projects', projectData);
+    return response.data;
+  }
+
+  async listProjectMembers(projectId: string): Promise<ProjectMember[]> {
+    const response = await this.client.get(`/projects/${projectId}/members`);
+    return response.data;
+  }
+
+  async assignMember(projectId: string, body: AssignProjectMemberRequest): Promise<ProjectMember> {
+    const response = await this.client.post(`/projects/${projectId}/members`, body);
+    return response.data;
+  }
+
+  async updateMemberRole(
+    projectId: string,
+    memberId: string,
+    body: UpdateProjectMemberRoleRequest,
+  ): Promise<any> {
+    const response = await this.client.put(`/projects/${projectId}/members/${memberId}/role`, body);
+    return response.data;
+  }
+
+  async createInvitation(projectId: string, body: CreateCatalogInvitationRequest): Promise<any> {
+    const response = await this.client.post(`/projects/${projectId}/members/invitations`, body);
     return response.data;
   }
 

@@ -26,6 +26,22 @@ export class DataStudioClient {
         const response = await this.client.post('/projects', projectData);
         return response.data;
     }
+    async listProjectMembers(projectId) {
+        const response = await this.client.get(`/projects/${projectId}/members`);
+        return response.data;
+    }
+    async assignMember(projectId, body) {
+        const response = await this.client.post(`/projects/${projectId}/members`, body);
+        return response.data;
+    }
+    async updateMemberRole(projectId, memberId, body) {
+        const response = await this.client.put(`/projects/${projectId}/members/${memberId}/role`, body);
+        return response.data;
+    }
+    async createInvitation(projectId, body) {
+        const response = await this.client.post(`/projects/${projectId}/members/invitations`, body);
+        return response.data;
+    }
     async listCollections(catalogId) {
         const response = await this.client.get(`/projects/${catalogId}/tables`, {
             params: { limit: 200 },
