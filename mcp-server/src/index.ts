@@ -499,7 +499,7 @@ class DataStudioServer {
           // ─── Asset Management (by table_id) ──────────────────────
           {
             name: 'list_assets',
-            description: 'List assets (uploaded files) in a table with pagination',
+            description: 'List assets (uploaded files) in a table with pagination and optional filters',
             inputSchema: {
               type: 'object',
               properties: {
@@ -516,6 +516,18 @@ class DataStudioServer {
                   type: 'number',
                   description: 'Items per page (default: 10)',
                   default: 10,
+                },
+                status: {
+                  type: 'string',
+                  description: 'Filter by asset status (e.g. SCANNED, PENDING, FAILED)',
+                },
+                created_at_from: {
+                  type: 'string',
+                  description: 'Filter assets created on or after this ISO 8601 datetime (e.g. 2026-03-01T00:00:00)',
+                },
+                created_at_to: {
+                  type: 'string',
+                  description: 'Filter assets created on or before this ISO 8601 datetime (e.g. 2026-03-02T23:59:59)',
                 },
               },
               required: ['table_id'],
@@ -751,39 +763,7 @@ class DataStudioServer {
           },
 
           // ─── Data / Asset-Column Values ──────────────────────────
-          {
-            name: 'get_asset_column_values',
-            description: 'Get all asset-column values (extracted data) for a table',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                table_id: {
-                  type: 'string',
-                  description: 'The UUID of the table',
-                },
-              },
-              required: ['table_id'],
-            },
-          },
-          {
-            name: 'get_data_assets',
-            description: 'Get column values for specific assets in a table',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                table_id: {
-                  type: 'string',
-                  description: 'The UUID of the table',
-                },
-                asset_ids: {
-                  type: 'array',
-                  items: { type: 'string' },
-                  description: 'List of asset IDs to query',
-                },
-              },
-              required: ['table_id', 'asset_ids'],
-            },
-          },
+          // Note: column values (values[]) are embedded in each asset returned by list_assets.
           {
             name: 'update_cell_value',
             description: 'Update a specific cell value (asset + column intersection)',
@@ -887,6 +867,137 @@ class DataStudioServer {
                 },
               },
               required: ['table_id'],
+            },
+          },
+
+          // ─── Skill Management ─────────────────────────────────
+          {
+            name: 'list_skills',
+            description: 'List all custom AI skills for a project',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                project_id: {
+                  type: 'string',
+                  description: 'The project/catalog ID',
+                },
+              },
+              required: ['project_id'],
+            },
+          },
+          {
+            name: 'get_skill',
+            description: 'Get a specific skill with its full content and references',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                project_id: {
+                  type: 'string',
+                  description: 'The project/catalog ID',
+                },
+                skill_id: {
+                  type: 'string',
+                  description: 'The UUID of the skill',
+                },
+              },
+              required: ['project_id', 'skill_id'],
+            },
+          },
+          {
+            name: 'create_skill',
+            description: 'Create a new custom AI skill for the Gemini CLI',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                project_id: {
+                  type: 'string',
+                  description: 'The project/catalog ID',
+                },
+                name: {
+                  type: 'string',
+                  description: 'Skill name in kebab-case',
+                },
+                description: {
+                  type: 'string',
+                  description: 'Description of the skill',
+                },
+                skill_md_content: {
+                  type: 'string',
+                  description: 'The SKILL.md body content — instructions for the AI',
+                },
+                is_enabled: {
+                  type: 'boolean',
+                  description: 'Whether the skill is enabled (default: true)',
+                  default: true,
+                },
+              },
+              required: ['project_id', 'name'],
+            },
+          },
+          {
+            name: 'update_skill',
+            description: 'Update an existing custom AI skill',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                project_id: {
+                  type: 'string',
+                  description: 'The project/catalog ID',
+                },
+                skill_id: {
+                  type: 'string',
+                  description: 'The UUID of the skill',
+                },
+                name: {
+                  type: 'string',
+                  description: 'Skill name in kebab-case',
+                },
+                description: {
+                  type: 'string',
+                  description: 'Description of the skill',
+                },
+                skill_md_content: {
+                  type: 'string',
+                  description: 'The SKILL.md body content — instructions for the AI',
+                },
+                is_enabled: {
+                  type: 'boolean',
+                  description: 'Whether the skill is enabled',
+                },
+              },
+              required: ['project_id', 'skill_id'],
+            },
+          },
+          {
+            name: 'delete_skill',
+            description: 'Delete a custom AI skill',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                project_id: {
+                  type: 'string',
+                  description: 'The project/catalog ID',
+                },
+                skill_id: {
+                  type: 'string',
+                  description: 'The UUID of the skill',
+                },
+              },
+              required: ['project_id', 'skill_id'],
+            },
+          },
+          {
+            name: 'reload_skills',
+            description: 'Hot-reload all enabled skills into the current sandbox session. Call this after creating, updating, or deleting skills to apply changes immediately.',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                project_id: {
+                  type: 'string',
+                  description: 'The project/catalog ID',
+                },
+              },
+              required: ['project_id'],
             },
           },
         ],
@@ -1063,6 +1174,9 @@ class DataStudioServer {
               args?.table_id as string,
               args?.page as number,
               args?.limit as number,
+              args?.status as string | undefined,
+              args?.created_at_from as string | undefined,
+              args?.created_at_to as string | undefined,
             );
             return {
               content: [{ type: 'text', text: JSON.stringify(assets, null, 2) }],
@@ -1164,22 +1278,7 @@ class DataStudioServer {
           }
 
           // ─── Data / Asset-Column Values ──────────────────────
-          case 'get_asset_column_values': {
-            const values = await this.dataClient.getAssetColumnValues(args?.table_id as string);
-            return {
-              content: [{ type: 'text', text: JSON.stringify(values, null, 2) }],
-            };
-          }
-
-          case 'get_data_assets': {
-            const values = await this.dataClient.getAssetColumnByAssets(
-              args?.table_id as string,
-              args?.asset_ids as string[],
-            );
-            return {
-              content: [{ type: 'text', text: JSON.stringify(values, null, 2) }],
-            };
-          }
+          // Note: column values (values[]) are embedded in each asset returned by list_assets.
 
           case 'update_cell_value': {
             const result = await this.dataClient.updateAssetColumnValue(
@@ -1231,6 +1330,54 @@ class DataStudioServer {
             );
             return {
               content: [{ type: 'text', text: JSON.stringify(files, null, 2) }],
+            };
+          }
+
+          // ─── Skill Management ────────────────────────────────
+          case 'list_skills': {
+            const skills = await this.dataClient.listSkills(args?.project_id as string);
+            return {
+              content: [{ type: 'text', text: JSON.stringify(skills, null, 2) }],
+            };
+          }
+
+          case 'get_skill': {
+            const skill = await this.dataClient.getSkill(
+              args?.project_id as string,
+              args?.skill_id as string,
+            );
+            return {
+              content: [{ type: 'text', text: JSON.stringify(skill, null, 2) }],
+            };
+          }
+
+          case 'create_skill': {
+            const { project_id, ...skillData } = args as any;
+            const skill = await this.dataClient.createSkill(project_id, skillData);
+            return {
+              content: [{ type: 'text', text: JSON.stringify(skill, null, 2) }],
+            };
+          }
+
+          case 'update_skill': {
+            const { project_id, skill_id, ...updateData } = args as any;
+            const skill = await this.dataClient.updateSkill(project_id, skill_id, updateData);
+            return {
+              content: [{ type: 'text', text: JSON.stringify(skill, null, 2) }],
+            };
+          }
+
+          case 'delete_skill': {
+            await this.dataClient.deleteSkill(args?.project_id as string, args?.skill_id as string);
+            return {
+              content: [{ type: 'text', text: JSON.stringify({ message: 'Skill deleted successfully' }, null, 2) }],
+            };
+          }
+
+          case 'reload_skills': {
+            const result = await this.dataClient.reloadSkills(args?.project_id as string);
+            return {
+              content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
             };
           }
 

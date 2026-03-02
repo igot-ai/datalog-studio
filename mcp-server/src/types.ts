@@ -67,13 +67,25 @@ export interface AddColumnRequest {
   };
 }
 
+export interface AssetValue {
+  column_name: string;
+  value: string | null;
+  version: number;
+}
+
 export interface Asset {
   id: string;
   table_id: string;
-  filename: string;
-  file_type: string;
-  file_directus_id: string;
+  version: number;
   status: string;
+  file_type: string;
+  filename: string;
+  file_directus_id: string;
+  is_vector: boolean;
+  source_id: string | null;
+  created_at: string;
+  updated_at: string;
+  values: AssetValue[];
 }
 
 export interface DatalogResponse {
@@ -140,6 +152,50 @@ export interface TableFilesResponse {
   total_files: number;
   table_id: string;
   link?: string;
+}
+
+// --- Skill Management Types ---
+
+export interface SkillReference {
+  id: string;
+  skill_id: string;
+  filename: string;
+  content: string;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Skill {
+  id: string;
+  project_id: string;
+  name: string;
+  description: string;
+  skill_md_content: string;
+  depends_on: string[];
+  is_enabled: boolean;
+  references: SkillReference[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateSkillRequest {
+  name: string;
+  description?: string;
+  skill_md_content?: string;
+  is_enabled?: boolean;
+}
+
+export interface UpdateSkillRequest {
+  name?: string;
+  description?: string;
+  skill_md_content?: string;
+  is_enabled?: boolean;
+}
+
+export interface ReloadSkillsResponse {
+  loaded: number;
+  message: string;
 }
 
 export interface ProjectMemberRole {

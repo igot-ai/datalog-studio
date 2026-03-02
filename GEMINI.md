@@ -38,6 +38,32 @@ When the user refers to "data", differentiate between:
 
 - **Error Handling**: If an API error occurs, provide the error message and the API response details to the user to help them troubleshoot API key or permission issues.
 
+## Skill Management
+
+Custom AI skills can be created, updated, and managed for each project. Skills provide domain-specific instructions that guide the AI when users interact with the Intelligence Console.
+
+### Skill Workflow
+1. `list_catalogs` → get the `project_id`
+2. `list_skills` → see existing skills for the project
+3. `create_skill` / `update_skill` / `delete_skill` → manage skills
+4. **Always call `reload_skills` after any skill change** to apply it to the current sandbox session
+
+### Skill Naming
+- Names must be **kebab-case**: lowercase letters, numbers, and hyphens (e.g., `invoice-processor`, `hr-assistant`)
+- Names must be unique within a project
+
+### What is `skill_md_content`?
+The `skill_md_content` field is the body of the SKILL.md file — the actual instructions that guide the AI. Write it as markdown with:
+- **What the skill does** — describe the domain and task
+- **Workflow steps** — how the AI should approach the task
+- **Collection recipes** — suggested column schemas for common document types
+- **Rules** — constraints and best practices
+
+### When to Use
+- User asks to "create a skill" or "add an AI skill"
+- User wants the AI console to handle a specific document type or workflow
+- User asks to "reload" or "refresh" skills
+
 ## Response Format
 
 When presenting lists of catalogs, collections, or data assets, use clean markdown tables or lists. For schemas/attributes, highlight the field names and their types clearly.

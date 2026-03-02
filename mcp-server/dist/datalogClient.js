@@ -102,10 +102,15 @@ export class DataStudioClient {
         return response.data;
     }
     // ─── Asset Management (by table_id) ────────────────────────────────
-    async listAssets(tableId, page = 1, limit = 10) {
-        const response = await this.client.get(`/tables/${tableId}/assets`, {
-            params: { page, limit },
-        });
+    async listAssets(tableId, page = 1, limit = 10, status, createdAtFrom, createdAtTo) {
+        const params = { page, limit };
+        if (status)
+            params.status = status;
+        if (createdAtFrom)
+            params.created_at_from = createdAtFrom;
+        if (createdAtTo)
+            params.created_at_to = createdAtTo;
+        const response = await this.client.get(`/tables/${tableId}/assets`, { params });
         return response.data;
     }
     async getAssetsCount(tableId) {
@@ -166,16 +171,7 @@ export class DataStudioClient {
         return response.data;
     }
     // ─── Data / Asset-Column Values ────────────────────────────────────
-    async getAssetColumnValues(tableId) {
-        const response = await this.client.get(`/tables/${tableId}/asset_column`);
-        return response.data;
-    }
-    async getAssetColumnByAssets(tableId, assetIds) {
-        const response = await this.client.get(`/tables/${tableId}/data_assets`, {
-            params: { asset_ids: assetIds },
-        });
-        return response.data;
-    }
+    // Note: column values (values[]) are embedded in each asset returned by listAssets.
     async updateAssetColumnValue(tableId, assetId, columnId, info) {
         const response = await this.client.put(`/tables/${tableId}/assets/${assetId}/columns/${columnId}/value_data`, info);
         return response.data;
@@ -206,6 +202,30 @@ export class DataStudioClient {
         const response = await this.client.get(`/tables/${tableId}/files`, {
             params: { limit },
         });
+        return response.data;
+    }
+    // ─── Skill Management ──────────────────────────────────────────────
+    async listSkills(projectId) {
+        const response = await this.client.get(`/projects/${projectId}/skills`);
+        return response.data;
+    }
+    async getSkill(projectId, skillId) {
+        const response = await this.client.get(`/projects/${projectId}/skills/${skillId}`);
+        return response.data;
+    }
+    async createSkill(projectId, data) {
+        const response = await this.client.post(`/projects/${projectId}/skills`, data);
+        return response.data;
+    }
+    async updateSkill(projectId, skillId, data) {
+        const response = await this.client.put(`/projects/${projectId}/skills/${skillId}`, data);
+        return response.data;
+    }
+    async deleteSkill(projectId, skillId) {
+        await this.client.delete(`/projects/${projectId}/skills/${skillId}`);
+    }
+    async reloadSkills(projectId) {
+        const response = await this.client.post(`/projects/${projectId}/skills/reload`);
         return response.data;
     }
 }
