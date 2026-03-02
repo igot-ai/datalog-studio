@@ -405,7 +405,7 @@ class DataStudioServer {
                     // ─── Asset Management (by table_id) ──────────────────────
                     {
                         name: 'list_assets',
-                        description: 'List assets (uploaded files) in a table with pagination',
+                        description: 'List assets (uploaded files) in a table with pagination and optional filters',
                         inputSchema: {
                             type: 'object',
                             properties: {
@@ -422,6 +422,18 @@ class DataStudioServer {
                                     type: 'number',
                                     description: 'Items per page (default: 10)',
                                     default: 10,
+                                },
+                                status: {
+                                    type: 'string',
+                                    description: 'Filter by asset status (e.g. SCANNED, PENDING, FAILED)',
+                                },
+                                created_at_from: {
+                                    type: 'string',
+                                    description: 'Filter assets created on or after this ISO 8601 datetime (e.g. 2026-03-01T00:00:00)',
+                                },
+                                created_at_to: {
+                                    type: 'string',
+                                    description: 'Filter assets created on or before this ISO 8601 datetime (e.g. 2026-03-02T23:59:59)',
                                 },
                             },
                             required: ['table_id'],
@@ -655,39 +667,7 @@ class DataStudioServer {
                         },
                     },
                     // ─── Data / Asset-Column Values ──────────────────────────
-                    {
-                        name: 'get_asset_column_values',
-                        description: 'Get all asset-column values (extracted data) for a table',
-                        inputSchema: {
-                            type: 'object',
-                            properties: {
-                                table_id: {
-                                    type: 'string',
-                                    description: 'The UUID of the table',
-                                },
-                            },
-                            required: ['table_id'],
-                        },
-                    },
-                    {
-                        name: 'get_data_assets',
-                        description: 'Get column values for specific assets in a table',
-                        inputSchema: {
-                            type: 'object',
-                            properties: {
-                                table_id: {
-                                    type: 'string',
-                                    description: 'The UUID of the table',
-                                },
-                                asset_ids: {
-                                    type: 'array',
-                                    items: { type: 'string' },
-                                    description: 'List of asset IDs to query',
-                                },
-                            },
-                            required: ['table_id', 'asset_ids'],
-                        },
-                    },
+                    // Note: column values (values[]) are embedded in each asset returned by list_assets.
                     {
                         name: 'update_cell_value',
                         description: 'Update a specific cell value (asset + column intersection)',
@@ -1019,7 +999,7 @@ class DataStudioServer {
                     }
                     // ─── Asset Management (by table_id) ──────────────────
                     case 'list_assets': {
-                        const assets = await this.dataClient.listAssets(args?.table_id, args?.page, args?.limit);
+                        const assets = await this.dataClient.listAssets(args?.table_id, args?.page, args?.limit, args?.status, args?.created_at_from, args?.created_at_to);
                         return {
                             content: [{ type: 'text', text: JSON.stringify(assets, null, 2) }],
                         };
@@ -1094,18 +1074,7 @@ class DataStudioServer {
                         };
                     }
                     // ─── Data / Asset-Column Values ──────────────────────
-                    case 'get_asset_column_values': {
-                        const values = await this.dataClient.getAssetColumnValues(args?.table_id);
-                        return {
-                            content: [{ type: 'text', text: JSON.stringify(values, null, 2) }],
-                        };
-                    }
-                    case 'get_data_assets': {
-                        const values = await this.dataClient.getAssetColumnByAssets(args?.table_id, args?.asset_ids);
-                        return {
-                            content: [{ type: 'text', text: JSON.stringify(values, null, 2) }],
-                        };
-                    }
+                    // Note: column values (values[]) are embedded in each asset returned by list_assets.
                     case 'update_cell_value': {
                         const result = await this.dataClient.updateAssetColumnValue(args?.table_id, args?.asset_id, args?.column_id, { value: args?.value });
                         return {

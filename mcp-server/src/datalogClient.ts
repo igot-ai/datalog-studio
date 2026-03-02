@@ -12,7 +12,6 @@ import {
   AssetColumnValueUpdateRequest,
   CreateAssetsOptions,
   AssetContent,
-  AssetColumnValue,
   TableFilesResponse,
   CreateProjectDTO,
   CreateTableDTO,
@@ -154,10 +153,20 @@ export class DataStudioClient {
 
   // ─── Asset Management (by table_id) ────────────────────────────────
 
-  async listAssets(tableId: string, page: number = 1, limit: number = 10): Promise<Asset[]> {
-    const response = await this.client.get(`/tables/${tableId}/assets`, {
-      params: { page, limit },
-    });
+  async listAssets(
+    tableId: string,
+    page: number = 1,
+    limit: number = 10,
+    status?: string,
+    createdAtFrom?: string,
+    createdAtTo?: string,
+  ): Promise<Asset[]> {
+    const params: Record<string, any> = { page, limit };
+    if (status) params.status = status;
+    if (createdAtFrom) params.created_at_from = createdAtFrom;
+    if (createdAtTo) params.created_at_to = createdAtTo;
+
+    const response = await this.client.get(`/tables/${tableId}/assets`, { params });
     return response.data;
   }
 
@@ -237,18 +246,7 @@ export class DataStudioClient {
   }
 
   // ─── Data / Asset-Column Values ────────────────────────────────────
-
-  async getAssetColumnValues(tableId: string): Promise<AssetColumnValue[]> {
-    const response = await this.client.get(`/tables/${tableId}/asset_column`);
-    return response.data;
-  }
-
-  async getAssetColumnByAssets(tableId: string, assetIds: string[]): Promise<AssetColumnValue[]> {
-    const response = await this.client.get(`/tables/${tableId}/data_assets`, {
-      params: { asset_ids: assetIds },
-    });
-    return response.data;
-  }
+  // Note: column values (values[]) are embedded in each asset returned by listAssets.
 
   async updateAssetColumnValue(
     tableId: string,
