@@ -38,6 +38,86 @@ class DataStudioServer {
                         },
                     },
                     {
+                        name: 'list_members',
+                        description: 'List all members of a catalog project, including their user profile and assigned role',
+                        inputSchema: {
+                            type: 'object',
+                            properties: {
+                                project_id: {
+                                    type: 'string',
+                                    description: 'The UUID of the catalog project',
+                                },
+                            },
+                            required: ['project_id'],
+                        },
+                    },
+                    {
+                        name: 'assign_member',
+                        description: 'Assign a user to a role within a catalog project',
+                        inputSchema: {
+                            type: 'object',
+                            properties: {
+                                project_id: {
+                                    type: 'string',
+                                    description: 'The UUID of the catalog project',
+                                },
+                                user_id: {
+                                    type: 'string',
+                                    description: 'The UUID of the user to assign',
+                                },
+                                role_id: {
+                                    type: 'string',
+                                    description: 'The UUID of the role to assign to the user',
+                                },
+                            },
+                            required: ['project_id', 'user_id', 'role_id'],
+                        },
+                    },
+                    {
+                        name: 'update_member_role',
+                        description: "Update an existing member's role in a catalog project",
+                        inputSchema: {
+                            type: 'object',
+                            properties: {
+                                project_id: {
+                                    type: 'string',
+                                    description: 'The UUID of the catalog project',
+                                },
+                                member_id: {
+                                    type: 'string',
+                                    description: 'The UUID of the project member record',
+                                },
+                                role_id: {
+                                    type: 'string',
+                                    description: 'The UUID of the new role to assign',
+                                },
+                            },
+                            required: ['project_id', 'member_id', 'role_id'],
+                        },
+                    },
+                    {
+                        name: 'invite_member',
+                        description: 'Send an email invitation to an external user to join a catalog project',
+                        inputSchema: {
+                            type: 'object',
+                            properties: {
+                                project_id: {
+                                    type: 'string',
+                                    description: 'The UUID of the catalog project',
+                                },
+                                email: {
+                                    type: 'string',
+                                    description: 'Email address of the user to invite',
+                                },
+                                role_id: {
+                                    type: 'string',
+                                    description: 'The UUID of the role to assign upon acceptance',
+                                },
+                            },
+                            required: ['project_id', 'email', 'role_id'],
+                        },
+                    },
+                    {
                         name: 'create_project',
                         description: 'Create a new data catalog project',
                         inputSchema: {
@@ -925,6 +1005,36 @@ class DataStudioServer {
                         const catalogs = await this.dataClient.listCatalogs();
                         return {
                             content: [{ type: 'text', text: JSON.stringify(catalogs, null, 2) }],
+                        };
+                    }
+                    case 'list_members': {
+                        const members = await this.dataClient.listProjectMembers(args?.project_id);
+                        return {
+                            content: [{ type: 'text', text: JSON.stringify(members, null, 2) }],
+                        };
+                    }
+                    case 'assign_member': {
+                        const member = await this.dataClient.assignMember(args?.project_id, {
+                            user_id: args?.user_id,
+                            role_id: args?.role_id,
+                        });
+                        return {
+                            content: [{ type: 'text', text: `Member assigned successfully: ${JSON.stringify(member, null, 2)}` }],
+                        };
+                    }
+                    case 'update_member_role': {
+                        const result = await this.dataClient.updateMemberRole(args?.project_id, args?.member_id, { role_id: args?.role_id });
+                        return {
+                            content: [{ type: 'text', text: `Member role updated: ${JSON.stringify(result, null, 2)}` }],
+                        };
+                    }
+                    case 'invite_member': {
+                        const invitation = await this.dataClient.createInvitation(args?.project_id, {
+                            email: args?.email,
+                            role_id: args?.role_id,
+                        });
+                        return {
+                            content: [{ type: 'text', text: `Invitation sent: ${JSON.stringify(invitation, null, 2)}` }],
                         };
                     }
                     case 'create_project': {

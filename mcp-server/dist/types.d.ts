@@ -172,3 +172,41 @@ export interface ReloadSkillsResponse {
     loaded: number;
     message: string;
 }
+export interface ProjectMemberRole {
+    id: string;
+    project_id: string;
+    role_key: string;
+    role_title: string;
+    created_by: string;
+    created_at: string;
+    updated_at: string;
+    permissions?: any[];
+}
+export interface ProjectMemberUser {
+    id: string;
+    email?: string;
+    first_name?: string;
+    last_name?: string;
+    avatar?: string;
+}
+export interface ProjectMember {
+    id: string;
+    project_id: string;
+    user_id: string;
+    role_id: string;
+    created_by: string;
+    created_at: string;
+    user: ProjectMemberUser;
+    role: ProjectMemberRole;
+}
+export interface AssignProjectMemberRequest {
+    user_id: string;
+    role_id: string;
+}
+export interface UpdateProjectMemberRoleRequest {
+    role_id: string;
+}
+export interface CreateCatalogInvitationRequest {
+    email: string;
+    role_id: string;
+}

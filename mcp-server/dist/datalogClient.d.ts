@@ -1,9 +1,13 @@
-import { Project, Table, Column, Asset, AddColumnRequest, TableUpdateRequest, ColumnUpdateRequest, AssetColumnValueUpdateRequest, CreateAssetsOptions, AssetContent, TableFilesResponse, CreateProjectDTO, CreateTableDTO, Skill, CreateSkillRequest, UpdateSkillRequest, ReloadSkillsResponse } from './types.js';
+import { Project, Table, Column, Asset, AddColumnRequest, TableUpdateRequest, ColumnUpdateRequest, AssetColumnValueUpdateRequest, CreateAssetsOptions, AssetContent, TableFilesResponse, CreateProjectDTO, CreateTableDTO, Skill, CreateSkillRequest, UpdateSkillRequest, ReloadSkillsResponse, ProjectMember, AssignProjectMemberRequest, UpdateProjectMemberRoleRequest, CreateCatalogInvitationRequest } from './types.js';
 export declare class DataStudioClient {
     private client;
     constructor(apiKey: string, apiDomain: string, apiUri: string, session: string);
     listCatalogs(): Promise<Project[]>;
     createProject(projectData: CreateProjectDTO): Promise<Project>;
+    listProjectMembers(projectId: string): Promise<ProjectMember[]>;
+    assignMember(projectId: string, body: AssignProjectMemberRequest): Promise<ProjectMember>;
+    updateMemberRole(projectId: string, memberId: string, body: UpdateProjectMemberRoleRequest): Promise<any>;
+    createInvitation(projectId: string, body: CreateCatalogInvitationRequest): Promise<any>;
     listCollections(catalogId: string): Promise<Table[]>;
     createTable(catalogId: string, tableData: CreateTableDTO): Promise<Table>;
     listAttributes(catalogName: string, collectionName: string): Promise<Column[]>;
