@@ -67,13 +67,25 @@ export interface AddColumnRequest {
   };
 }
 
+export interface AssetValue {
+  column_name: string;
+  value: string | null;
+  version: number;
+}
+
 export interface Asset {
   id: string;
   table_id: string;
-  filename: string;
-  file_type: string;
-  file_directus_id: string;
+  version: number;
   status: string;
+  file_type: string;
+  filename: string;
+  file_directus_id: string;
+  is_vector: boolean;
+  source_id: string | null;
+  created_at: string;
+  updated_at: string;
+  values: AssetValue[];
 }
 
 export interface DatalogResponse {
