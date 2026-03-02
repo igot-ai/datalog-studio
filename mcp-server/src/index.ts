@@ -809,6 +809,137 @@ class DataStudioServer {
               required: ['table_id'],
             },
           },
+
+          // ─── Skill Management ─────────────────────────────────
+          {
+            name: 'list_skills',
+            description: 'List all custom AI skills for a project',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                project_id: {
+                  type: 'string',
+                  description: 'The project/catalog ID',
+                },
+              },
+              required: ['project_id'],
+            },
+          },
+          {
+            name: 'get_skill',
+            description: 'Get a specific skill with its full content and references',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                project_id: {
+                  type: 'string',
+                  description: 'The project/catalog ID',
+                },
+                skill_id: {
+                  type: 'string',
+                  description: 'The UUID of the skill',
+                },
+              },
+              required: ['project_id', 'skill_id'],
+            },
+          },
+          {
+            name: 'create_skill',
+            description: 'Create a new custom AI skill for the Gemini CLI',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                project_id: {
+                  type: 'string',
+                  description: 'The project/catalog ID',
+                },
+                name: {
+                  type: 'string',
+                  description: 'Skill name in kebab-case',
+                },
+                description: {
+                  type: 'string',
+                  description: 'Description of the skill',
+                },
+                skill_md_content: {
+                  type: 'string',
+                  description: 'The SKILL.md body content — instructions for the AI',
+                },
+                is_enabled: {
+                  type: 'boolean',
+                  description: 'Whether the skill is enabled (default: true)',
+                  default: true,
+                },
+              },
+              required: ['project_id', 'name'],
+            },
+          },
+          {
+            name: 'update_skill',
+            description: 'Update an existing custom AI skill',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                project_id: {
+                  type: 'string',
+                  description: 'The project/catalog ID',
+                },
+                skill_id: {
+                  type: 'string',
+                  description: 'The UUID of the skill',
+                },
+                name: {
+                  type: 'string',
+                  description: 'Skill name in kebab-case',
+                },
+                description: {
+                  type: 'string',
+                  description: 'Description of the skill',
+                },
+                skill_md_content: {
+                  type: 'string',
+                  description: 'The SKILL.md body content — instructions for the AI',
+                },
+                is_enabled: {
+                  type: 'boolean',
+                  description: 'Whether the skill is enabled',
+                },
+              },
+              required: ['project_id', 'skill_id'],
+            },
+          },
+          {
+            name: 'delete_skill',
+            description: 'Delete a custom AI skill',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                project_id: {
+                  type: 'string',
+                  description: 'The project/catalog ID',
+                },
+                skill_id: {
+                  type: 'string',
+                  description: 'The UUID of the skill',
+                },
+              },
+              required: ['project_id', 'skill_id'],
+            },
+          },
+          {
+            name: 'reload_skills',
+            description: 'Hot-reload all enabled skills into the current sandbox session. Call this after creating, updating, or deleting skills to apply changes immediately.',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                project_id: {
+                  type: 'string',
+                  description: 'The project/catalog ID',
+                },
+              },
+              required: ['project_id'],
+            },
+          },
         ],
       };
     });
@@ -1113,6 +1244,54 @@ class DataStudioServer {
             );
             return {
               content: [{ type: 'text', text: JSON.stringify(files, null, 2) }],
+            };
+          }
+
+          // ─── Skill Management ────────────────────────────────
+          case 'list_skills': {
+            const skills = await this.dataClient.listSkills(args?.project_id as string);
+            return {
+              content: [{ type: 'text', text: JSON.stringify(skills, null, 2) }],
+            };
+          }
+
+          case 'get_skill': {
+            const skill = await this.dataClient.getSkill(
+              args?.project_id as string,
+              args?.skill_id as string,
+            );
+            return {
+              content: [{ type: 'text', text: JSON.stringify(skill, null, 2) }],
+            };
+          }
+
+          case 'create_skill': {
+            const { project_id, ...skillData } = args as any;
+            const skill = await this.dataClient.createSkill(project_id, skillData);
+            return {
+              content: [{ type: 'text', text: JSON.stringify(skill, null, 2) }],
+            };
+          }
+
+          case 'update_skill': {
+            const { project_id, skill_id, ...updateData } = args as any;
+            const skill = await this.dataClient.updateSkill(project_id, skill_id, updateData);
+            return {
+              content: [{ type: 'text', text: JSON.stringify(skill, null, 2) }],
+            };
+          }
+
+          case 'delete_skill': {
+            await this.dataClient.deleteSkill(args?.project_id as string, args?.skill_id as string);
+            return {
+              content: [{ type: 'text', text: JSON.stringify({ message: 'Skill deleted successfully' }, null, 2) }],
+            };
+          }
+
+          case 'reload_skills': {
+            const result = await this.dataClient.reloadSkills(args?.project_id as string);
+            return {
+              content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
             };
           }
 

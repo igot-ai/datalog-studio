@@ -1,4 +1,4 @@
-import { Project, Table, Column, Asset, AddColumnRequest, TableUpdateRequest, ColumnUpdateRequest, AssetColumnValueUpdateRequest, CreateAssetsOptions, AssetContent, AssetColumnValue, TableFilesResponse, CreateProjectDTO, CreateTableDTO } from './types.js';
+import { Project, Table, Column, Asset, AddColumnRequest, TableUpdateRequest, ColumnUpdateRequest, AssetColumnValueUpdateRequest, CreateAssetsOptions, AssetContent, AssetColumnValue, TableFilesResponse, CreateProjectDTO, CreateTableDTO, Skill, CreateSkillRequest, UpdateSkillRequest, ReloadSkillsResponse } from './types.js';
 export declare class DataStudioClient {
     private client;
     constructor(apiKey: string, apiDomain: string, apiUri: string, session: string);
@@ -34,4 +34,10 @@ export declare class DataStudioClient {
     exportCsv(tableId: string): Promise<string>;
     exportExcel(tableId: string): Promise<Buffer>;
     getTableFiles(tableId: string, limit?: number): Promise<TableFilesResponse>;
+    listSkills(projectId: string): Promise<Skill[]>;
+    getSkill(projectId: string, skillId: string): Promise<Skill>;
+    createSkill(projectId: string, data: CreateSkillRequest): Promise<Skill>;
+    updateSkill(projectId: string, skillId: string, data: UpdateSkillRequest): Promise<Skill>;
+    deleteSkill(projectId: string, skillId: string): Promise<void>;
+    reloadSkills(projectId: string): Promise<ReloadSkillsResponse>;
 }

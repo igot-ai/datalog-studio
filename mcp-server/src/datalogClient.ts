@@ -16,6 +16,10 @@ import {
   TableFilesResponse,
   CreateProjectDTO,
   CreateTableDTO,
+  Skill,
+  CreateSkillRequest,
+  UpdateSkillRequest,
+  ReloadSkillsResponse,
 } from './types.js';
 
 export class DataStudioClient {
@@ -291,6 +295,37 @@ export class DataStudioClient {
     const response = await this.client.get(`/tables/${tableId}/files`, {
       params: { limit },
     });
+    return response.data;
+  }
+
+  // ─── Skill Management ──────────────────────────────────────────────
+
+  async listSkills(projectId: string): Promise<Skill[]> {
+    const response = await this.client.get(`/projects/${projectId}/skills`);
+    return response.data;
+  }
+
+  async getSkill(projectId: string, skillId: string): Promise<Skill> {
+    const response = await this.client.get(`/projects/${projectId}/skills/${skillId}`);
+    return response.data;
+  }
+
+  async createSkill(projectId: string, data: CreateSkillRequest): Promise<Skill> {
+    const response = await this.client.post(`/projects/${projectId}/skills`, data);
+    return response.data;
+  }
+
+  async updateSkill(projectId: string, skillId: string, data: UpdateSkillRequest): Promise<Skill> {
+    const response = await this.client.put(`/projects/${projectId}/skills/${skillId}`, data);
+    return response.data;
+  }
+
+  async deleteSkill(projectId: string, skillId: string): Promise<void> {
+    await this.client.delete(`/projects/${projectId}/skills/${skillId}`);
+  }
+
+  async reloadSkills(projectId: string): Promise<ReloadSkillsResponse> {
+    const response = await this.client.post(`/projects/${projectId}/skills/reload`);
     return response.data;
   }
 }

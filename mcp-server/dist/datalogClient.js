@@ -192,4 +192,28 @@ export class DataStudioClient {
         });
         return response.data;
     }
+    // ─── Skill Management ──────────────────────────────────────────────
+    async listSkills(projectId) {
+        const response = await this.client.get(`/projects/${projectId}/skills`);
+        return response.data;
+    }
+    async getSkill(projectId, skillId) {
+        const response = await this.client.get(`/projects/${projectId}/skills/${skillId}`);
+        return response.data;
+    }
+    async createSkill(projectId, data) {
+        const response = await this.client.post(`/projects/${projectId}/skills`, data);
+        return response.data;
+    }
+    async updateSkill(projectId, skillId, data) {
+        const response = await this.client.put(`/projects/${projectId}/skills/${skillId}`, data);
+        return response.data;
+    }
+    async deleteSkill(projectId, skillId) {
+        await this.client.delete(`/projects/${projectId}/skills/${skillId}`);
+    }
+    async reloadSkills(projectId) {
+        const response = await this.client.post(`/projects/${projectId}/skills/reload`);
+        return response.data;
+    }
 }
