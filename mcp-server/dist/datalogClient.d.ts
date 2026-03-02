@@ -1,4 +1,4 @@
-import { Project, Table, Column, Asset, AddColumnRequest, TableUpdateRequest, ColumnUpdateRequest, AssetColumnValueUpdateRequest, CreateAssetsOptions, AssetContent, AssetColumnValue, TableFilesResponse, CreateProjectDTO, CreateTableDTO, Skill, CreateSkillRequest, UpdateSkillRequest, ReloadSkillsResponse } from './types.js';
+import { Project, Table, Column, Asset, AddColumnRequest, TableUpdateRequest, ColumnUpdateRequest, AssetColumnValueUpdateRequest, CreateAssetsOptions, AssetContent, TableFilesResponse, CreateProjectDTO, CreateTableDTO, Skill, CreateSkillRequest, UpdateSkillRequest, ReloadSkillsResponse } from './types.js';
 export declare class DataStudioClient {
     private client;
     constructor(apiKey: string, apiDomain: string, apiUri: string, session: string);
@@ -15,7 +15,7 @@ export declare class DataStudioClient {
     getTableJsonSchema(tableId: string): Promise<any>;
     updateTable(tableId: string, info: TableUpdateRequest): Promise<Table>;
     deleteTable(tableId: string): Promise<boolean>;
-    listAssets(tableId: string, page?: number, limit?: number): Promise<Asset[]>;
+    listAssets(tableId: string, page?: number, limit?: number, status?: string, createdAtFrom?: string, createdAtTo?: string): Promise<Asset[]>;
     getAssetsCount(tableId: string): Promise<number>;
     getAssetContent(tableId: string, assetId: string): Promise<AssetContent>;
     createAssets(tableId: string, filePaths?: string[], options?: CreateAssetsOptions): Promise<any>;
@@ -26,8 +26,6 @@ export declare class DataStudioClient {
     createColumnsBulk(tableId: string, info: AddColumnRequest[]): Promise<any>;
     updateColumn(tableId: string, info: ColumnUpdateRequest): Promise<any>;
     deleteColumn(tableId: string, columnId: string): Promise<boolean>;
-    getAssetColumnValues(tableId: string): Promise<AssetColumnValue[]>;
-    getAssetColumnByAssets(tableId: string, assetIds: string[]): Promise<AssetColumnValue[]>;
     updateAssetColumnValue(tableId: string, assetId: string, columnId: string, info: AssetColumnValueUpdateRequest): Promise<any>;
     deleteAssetColumn(tableId: string): Promise<boolean>;
     exportJson(tableId: string): Promise<any>;
