@@ -1035,7 +1035,11 @@ class DataStudioServer {
           {
             name: 'query_physical_table',
             description:
-              'Query rows from a physical SQL table backing a catalog collection. Pass ALL filter conditions together in the filters array — never fetch all rows to filter manually. Supports multiple AND conditions, ordering and pagination. Always call describe_physical_table first to know available column names.',
+              'Query rows from a physical SQL table backing a catalog collection. ' +
+              'Supports optional GROUP BY to return distinct combinations of column values (e.g. all unique categories). ' +
+              'ALWAYS call describe_physical_table first to know available column names and types. ' +
+              'Pass ALL filter conditions in the filters object — never fetch all rows to filter manually. ' +
+              'For aggregate functions (SUM, COUNT, AVG, MIN, MAX) or HAVING clauses, use aggregate_physical_table instead.',
             inputSchema: {
               type: 'object',
               properties: {
@@ -1043,10 +1047,21 @@ class DataStudioServer {
                   type: 'string',
                   description: 'The UUID of the catalog collection to query',
                 },
+                group_by: {
+                  type: 'array',
+                  items: { type: 'string' },
+                  description:
+                    'Optional GROUP BY columns. When set, returns one row per distinct combination of those columns. ' +
+                    'Omit entirely (or set to null) for a plain SELECT *. ' +
+                    'Only the listed column names appear in the result rows. ' +
+                    'Do NOT use this together with aggregate functions — use aggregate_physical_table for that.',
+                },
                 filters: {
                   type: 'object',
                   description:
-                    'A FilterGroup — { operator, conditions }. operator is "and" or "or". conditions is a list of { column, op, value } leaf filters OR nested FilterGroup objects. Use nested groups to express OR within AND, e.g. (meals OR software) AND date AND taxable.',
+                    'Optional FilterGroup — { operator, conditions }. operator is "and" or "or". ' +
+                    'conditions is a list of leaf filters { column, op, value } OR nested FilterGroup objects. ' +
+                    'Supported ops: eq, neq, gt, lt, gte, lte, like, ilike, is_null, is_not_null.',
                   properties: {
                     operator: {
                       type: 'string',
@@ -1059,7 +1074,7 @@ class DataStudioServer {
                       description: 'List of filter conditions or nested FilterGroup objects',
                       items: {
                         type: 'object',
-                        description: 'Either a leaf filter { column, op, value } or a nested FilterGroup { operator, conditions }',
+                        description: 'Leaf filter { column, op, value } or nested FilterGroup { operator, conditions }',
                       },
                     },
                   },
@@ -1067,7 +1082,8 @@ class DataStudioServer {
                 },
                 order_by: {
                   type: 'string',
-                  description: 'Column name to sort results by',
+                  description:
+                    'Column name to sort by. When group_by is set, must be one of the grouped columns.',
                 },
                 order_dir: {
                   type: 'string',
@@ -1088,6 +1104,109 @@ class DataStudioServer {
                 },
               },
               required: ['table_id'],
+            },
+          },
+          {
+            name: 'aggregate_physical_table',
+            description:
+              'Execute a GROUP BY + aggregation query (COUNT, SUM, AVG, MIN, MAX) on a physical SQL table. ' +
+              'Use this — not query_physical_table — when you need aggregate functions or a HAVING clause. ' +
+              'ALWAYS call describe_physical_table first to know available column names. ' +
+              'Routing guide:\n' +
+              '  • "How many rows per category?" → group_by=["category"], aggregates=[{func:"count",alias:"n"}]\n' +
+              '  • "Total amount per merchant?" → group_by=["merchant"], aggregates=[{func:"sum",column:"amount",alias:"total"}]\n' +
+              '  • "Average score?" → aggregates=[{func:"avg",column:"score",alias:"avg_score"}] (no group_by → global)\n' +
+              '  • "Categories with total > 500?" → add having filter on the alias\n' +
+              '  • "Distinct values of category?" → use query_physical_table with group_by=["category"] instead',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                table_id: {
+                  type: 'string',
+                  description: 'The UUID of the catalog collection to aggregate',
+                },
+                group_by: {
+                  type: 'array',
+                  items: { type: 'string' },
+                  description:
+                    'Columns to group on. Omit or pass [] for global aggregation (no GROUP BY — single result row).',
+                },
+                aggregates: {
+                  type: 'array',
+                  description: 'Required. At least one aggregate expression.',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      func: {
+                        type: 'string',
+                        enum: ['count', 'sum', 'avg', 'min', 'max'],
+                        description: 'Aggregate function',
+                      },
+                      column: {
+                        type: 'string',
+                        description: 'Column to aggregate. Use "*" for COUNT(*). Default: "*"',
+                        default: '*',
+                      },
+                      alias: {
+                        type: 'string',
+                        description:
+                          'Output key in result rows. Valid identifier (letters, digits, underscore). ' +
+                          'Used in order_by and having to reference this aggregate.',
+                      },
+                    },
+                    required: ['func', 'alias'],
+                  },
+                  minItems: 1,
+                },
+                filters: {
+                  type: 'object',
+                  description:
+                    'Optional pre-aggregation WHERE filter (applied before grouping). ' +
+                    'Same FilterGroup format as query_physical_table. ' +
+                    'Use column names from the physical table, not aggregate aliases.',
+                  properties: {
+                    operator: { type: 'string', enum: ['and', 'or'] },
+                    conditions: { type: 'array', items: { type: 'object' } },
+                  },
+                  required: ['operator', 'conditions'],
+                },
+                having: {
+                  type: 'object',
+                  description:
+                    'Optional post-aggregation HAVING filter (applied after grouping). ' +
+                    'Use aggregate ALIAS names (e.g. "total_amount") as column references — NOT original column names. ' +
+                    'Example: { operator: "and", conditions: [{ column: "total_amount", op: "gte", value: "500" }] }',
+                  properties: {
+                    operator: { type: 'string', enum: ['and', 'or'] },
+                    conditions: { type: 'array', items: { type: 'object' } },
+                  },
+                  required: ['operator', 'conditions'],
+                },
+                order_by: {
+                  type: 'string',
+                  description:
+                    'Column to sort by. Must be a group_by column name OR an aggregate alias. ' +
+                    'Cannot be a raw physical column that is not in group_by.',
+                },
+                order_dir: {
+                  type: 'string',
+                  enum: ['asc', 'desc'],
+                  description: 'Sort direction (default: asc)',
+                  default: 'asc',
+                },
+                limit: {
+                  type: 'number',
+                  description: 'Max rows to return (default: 50, max: 1000)',
+                  default: 50,
+                  maximum: 1000,
+                },
+                offset: {
+                  type: 'number',
+                  description: 'Pagination offset (default: 0)',
+                  default: 0,
+                },
+              },
+              required: ['table_id', 'aggregates'],
             },
           },
         ],
@@ -1489,6 +1608,14 @@ class DataStudioServer {
           case 'query_physical_table': {
             const { table_id, ...queryParams } = args as any;
             const result = await this.dataClient.queryPhysicalTable(table_id, queryParams);
+            return {
+              content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
+            };
+          }
+
+          case 'aggregate_physical_table': {
+            const { table_id, ...aggParams } = args as any;
+            const result = await this.dataClient.aggregatePhysicalTable(table_id, aggParams);
             return {
               content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
             };

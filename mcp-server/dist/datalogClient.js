@@ -241,4 +241,8 @@ export class DataStudioClient {
         const response = await this.client.post(`/tables/${tableId}/physic/query`, params);
         return response.data;
     }
+    async aggregatePhysicalTable(tableId, params) {
+        const response = await this.client.post(`/tables/${tableId}/physic/aggregate`, params);
+        return response.data;
+    }
 }

@@ -1,4 +1,4 @@
-import { Project, Table, Column, Asset, AddColumnRequest, TableUpdateRequest, ColumnUpdateRequest, AssetColumnValueUpdateRequest, CreateAssetsOptions, AssetContent, TableFilesResponse, CreateProjectDTO, CreateTableDTO, Skill, CreateSkillRequest, UpdateSkillRequest, ReloadSkillsResponse, ProjectMember, AssignProjectMemberRequest, UpdateProjectMemberRoleRequest, CreateCatalogInvitationRequest, PhysicalTableEntry, PhysicalTableSchema, PhysicalTableQueryParams, PhysicalTableQueryResult } from './types.js';
+import { Project, Table, Column, Asset, AddColumnRequest, TableUpdateRequest, ColumnUpdateRequest, AssetColumnValueUpdateRequest, CreateAssetsOptions, AssetContent, TableFilesResponse, CreateProjectDTO, CreateTableDTO, Skill, CreateSkillRequest, UpdateSkillRequest, ReloadSkillsResponse, ProjectMember, AssignProjectMemberRequest, UpdateProjectMemberRoleRequest, CreateCatalogInvitationRequest, PhysicalTableEntry, PhysicalTableSchema, PhysicalTableQueryParams, PhysicalTableQueryResult, PhysicalTableGroupByParams, PhysicalTableGroupByResult } from './types.js';
 export declare class DataStudioClient {
     private client;
     constructor(apiKey: string, apiDomain: string, apiUri: string, session: string);
@@ -45,4 +45,5 @@ export declare class DataStudioClient {
     listPhysicalTables(projectId: string): Promise<PhysicalTableEntry[]>;
     describePhysicalTable(tableId: string): Promise<PhysicalTableSchema>;
     queryPhysicalTable(tableId: string, params: PhysicalTableQueryParams): Promise<PhysicalTableQueryResult>;
+    aggregatePhysicalTable(tableId: string, params: PhysicalTableGroupByParams): Promise<PhysicalTableGroupByResult>;
 }
