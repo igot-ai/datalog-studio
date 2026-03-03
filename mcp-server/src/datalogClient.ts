@@ -27,6 +27,8 @@ import {
   PhysicalTableSchema,
   PhysicalTableQueryParams,
   PhysicalTableQueryResult,
+  PhysicalTableGroupByParams,
+  PhysicalTableGroupByResult,
 } from './types.js';
 
 export class DataStudioClient {
@@ -376,6 +378,14 @@ export class DataStudioClient {
     params: PhysicalTableQueryParams,
   ): Promise<PhysicalTableQueryResult> {
     const response = await this.client.post(`/tables/${tableId}/physic/query`, params);
+    return response.data;
+  }
+
+  async aggregatePhysicalTable(
+    tableId: string,
+    params: PhysicalTableGroupByParams,
+  ): Promise<PhysicalTableGroupByResult> {
+    const response = await this.client.post(`/tables/${tableId}/physic/aggregate`, params);
     return response.data;
   }
 }

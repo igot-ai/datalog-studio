@@ -272,6 +272,13 @@ export interface PhysicalTableFilterGroup {
 }
 
 export interface PhysicalTableQueryParams {
+  /**
+   * Optional GROUP BY: returns one row per distinct combination of listed
+   * column names. Omit or set to null for a plain SELECT *.
+   * Do NOT set this when you also want aggregate functions — use
+   * aggregate_physical_table for SUM / COUNT / AVG / MIN / MAX.
+   */
+  group_by?: string[] | null;
   filters?: PhysicalTableFilterGroup;
   order_by?: string;
   order_dir?: 'asc' | 'desc';
@@ -281,6 +288,51 @@ export interface PhysicalTableQueryParams {
 
 export interface PhysicalTableQueryResult {
   physical_table_name: string;
+  total: number;
+  limit: number;
+  offset: number;
+  rows: Record<string, any>[];
+  /** Echoed back when group_by was set; empty array for plain SELECT. */
+  group_by?: string[];
+}
+
+// ─── Aggregate (GROUP BY + functions) Types ────────────────────────────────
+
+export interface PhysicalTableAggregateSpec {
+  /** Aggregate function: count | sum | avg | min | max */
+  func: 'count' | 'sum' | 'avg' | 'min' | 'max';
+  /** Column to aggregate. Use "*" for COUNT(*). Default: "*" */
+  column?: string;
+  /** Output key in result rows. Must be a valid identifier (no spaces). */
+  alias: string;
+}
+
+export interface PhysicalTableGroupByParams {
+  /** Columns to group on. Empty list → global aggregation (no GROUP BY cols). */
+  group_by?: string[];
+  /** Required — at least one aggregate expression. */
+  aggregates: PhysicalTableAggregateSpec[];
+  /** Pre-aggregation WHERE filter (same FilterGroup format as query). */
+  filters?: PhysicalTableFilterGroup;
+  /**
+   * Post-aggregation HAVING filter.
+   * Use aggregate *alias* names as column references, not original column names.
+   * Example: { operator: "and", conditions: [{ column: "total_amount", op: "gte", value: "500" }] }
+   */
+  having?: PhysicalTableFilterGroup;
+  /** Must be a group_by column name or an aggregate alias — not a raw column. */
+  order_by?: string;
+  order_dir?: 'asc' | 'desc';
+  limit?: number;
+  offset?: number;
+}
+
+export interface PhysicalTableGroupByResult {
+  physical_table_name: string;
+  /** Columns used in GROUP BY (empty for global aggregation). */
+  group_by: string[];
+  /** Aggregate alias names, in order. */
+  aggregates: string[];
   total: number;
   limit: number;
   offset: number;
