@@ -23,6 +23,10 @@ import {
   AssignProjectMemberRequest,
   UpdateProjectMemberRoleRequest,
   CreateCatalogInvitationRequest,
+  PhysicalTableEntry,
+  PhysicalTableSchema,
+  PhysicalTableQueryParams,
+  PhysicalTableQueryResult,
 } from './types.js';
 
 export class DataStudioClient {
@@ -352,6 +356,26 @@ export class DataStudioClient {
 
   async reloadSkills(projectId: string): Promise<ReloadSkillsResponse> {
     const response = await this.client.post(`/projects/${projectId}/skills/reload`);
+    return response.data;
+  }
+
+  // ─── Physical Table Methods ─────────────────────────────────────────
+
+  async listPhysicalTables(projectId: string): Promise<PhysicalTableEntry[]> {
+    const response = await this.client.get(`/projects/${projectId}/physic/tables`);
+    return response.data;
+  }
+
+  async describePhysicalTable(tableId: string): Promise<PhysicalTableSchema> {
+    const response = await this.client.get(`/tables/${tableId}/physic/schema`);
+    return response.data;
+  }
+
+  async queryPhysicalTable(
+    tableId: string,
+    params: PhysicalTableQueryParams,
+  ): Promise<PhysicalTableQueryResult> {
+    const response = await this.client.post(`/tables/${tableId}/physic/query`, params);
     return response.data;
   }
 }

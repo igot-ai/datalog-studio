@@ -981,6 +981,91 @@ class DataStudioServer {
                             required: ['project_id'],
                         },
                     },
+                    // ─── Physical Table Tools ────────────────────────────────
+                    {
+                        name: 'list_physical_tables',
+                        description: 'List all catalog collections that have a physical SQL table ready for querying. Returns table metadata including the physical table name, description, row count and column count.',
+                        inputSchema: {
+                            type: 'object',
+                            properties: {
+                                project_id: {
+                                    type: 'string',
+                                    description: 'The UUID of the catalog project (catalog)',
+                                },
+                            },
+                            required: ['project_id'],
+                        },
+                    },
+                    {
+                        name: 'describe_physical_table',
+                        description: 'Get the column schema and row count of a physical SQL table backing a catalog collection. Use this before querying to understand available columns and their types.',
+                        inputSchema: {
+                            type: 'object',
+                            properties: {
+                                table_id: {
+                                    type: 'string',
+                                    description: 'The UUID of the catalog collection (table)',
+                                },
+                            },
+                            required: ['table_id'],
+                        },
+                    },
+                    {
+                        name: 'query_physical_table',
+                        description: 'Query rows from a physical SQL table backing a catalog collection. Pass ALL filter conditions together in the filters array — never fetch all rows to filter manually. Supports multiple AND conditions, ordering and pagination. Always call describe_physical_table first to know available column names.',
+                        inputSchema: {
+                            type: 'object',
+                            properties: {
+                                table_id: {
+                                    type: 'string',
+                                    description: 'The UUID of the catalog collection to query',
+                                },
+                                filters: {
+                                    type: 'object',
+                                    description: 'A FilterGroup — { operator, conditions }. operator is "and" or "or". conditions is a list of { column, op, value } leaf filters OR nested FilterGroup objects. Use nested groups to express OR within AND, e.g. (meals OR software) AND date AND taxable.',
+                                    properties: {
+                                        operator: {
+                                            type: 'string',
+                                            enum: ['and', 'or'],
+                                            description: 'How to join conditions: "and" (all must match) or "or" (any must match)',
+                                            default: 'and',
+                                        },
+                                        conditions: {
+                                            type: 'array',
+                                            description: 'List of filter conditions or nested FilterGroup objects',
+                                            items: {
+                                                type: 'object',
+                                                description: 'Either a leaf filter { column, op, value } or a nested FilterGroup { operator, conditions }',
+                                            },
+                                        },
+                                    },
+                                    required: ['operator', 'conditions'],
+                                },
+                                order_by: {
+                                    type: 'string',
+                                    description: 'Column name to sort results by',
+                                },
+                                order_dir: {
+                                    type: 'string',
+                                    enum: ['asc', 'desc'],
+                                    description: 'Sort direction (default: asc)',
+                                    default: 'asc',
+                                },
+                                limit: {
+                                    type: 'number',
+                                    description: 'Max rows to return (default: 50, max: 1000)',
+                                    default: 50,
+                                    maximum: 1000,
+                                },
+                                offset: {
+                                    type: 'number',
+                                    description: 'Number of rows to skip for pagination (default: 0)',
+                                    default: 0,
+                                },
+                            },
+                            required: ['table_id'],
+                        },
+                    },
                 ],
             };
         });
@@ -1259,6 +1344,26 @@ class DataStudioServer {
                     }
                     case 'reload_skills': {
                         const result = await this.dataClient.reloadSkills(args?.project_id);
+                        return {
+                            content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
+                        };
+                    }
+                    // ─── Physical Table Tools ────────────────────────────
+                    case 'list_physical_tables': {
+                        const tables = await this.dataClient.listPhysicalTables(args?.project_id);
+                        return {
+                            content: [{ type: 'text', text: JSON.stringify(tables, null, 2) }],
+                        };
+                    }
+                    case 'describe_physical_table': {
+                        const schema = await this.dataClient.describePhysicalTable(args?.table_id);
+                        return {
+                            content: [{ type: 'text', text: JSON.stringify(schema, null, 2) }],
+                        };
+                    }
+                    case 'query_physical_table': {
+                        const { table_id, ...queryParams } = args;
+                        const result = await this.dataClient.queryPhysicalTable(table_id, queryParams);
                         return {
                             content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
                         };

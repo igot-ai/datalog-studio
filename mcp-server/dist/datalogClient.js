@@ -228,4 +228,17 @@ export class DataStudioClient {
         const response = await this.client.post(`/projects/${projectId}/skills/reload`);
         return response.data;
     }
+    // ─── Physical Table Methods ─────────────────────────────────────────
+    async listPhysicalTables(projectId) {
+        const response = await this.client.get(`/projects/${projectId}/physic/tables`);
+        return response.data;
+    }
+    async describePhysicalTable(tableId) {
+        const response = await this.client.get(`/tables/${tableId}/physic/schema`);
+        return response.data;
+    }
+    async queryPhysicalTable(tableId, params) {
+        const response = await this.client.post(`/tables/${tableId}/physic/query`, params);
+        return response.data;
+    }
 }

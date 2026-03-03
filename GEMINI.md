@@ -74,3 +74,78 @@ Example:
 | product_id | text | Unique identifier for product |
 | ... | ... | ... |
 
+---
+
+## Physical Table Querying
+
+Every catalog collection has a backing PostgreSQL physical table, queryable regardless of its status (`DRAFT`, `PROD`, etc.). Three tools expose read-only access to these tables so the AI can query structured data directly.
+
+### Choosing the Right Tool for Data Retrieval
+
+Understanding **what the user is looking for** determines which tool to use:
+
+- **Source files and documents** — when the user wants to see the original uploaded files, their processing status, or raw content, use the asset tools (`list_assets`, `get_asset_content`, etc.). These tools operate on the source material.
+
+- **Extracted structured values** — when the user wants to find, filter, or explore the data that has been extracted and stored (e.g. "show me transactions from Starbucks", "find products where price is above 100", "get records where status is active"), the answer lives in the **physical SQL table**, not in the source files. Use `query_physical_table` for this intent.
+
+The key distinction is intent: asset tools answer *"what files were uploaded?"* while `query_physical_table` answers *"what is the data inside those files after extraction?"*. Conflating these two will produce results that look plausible but are factually incorrect, because asset listings do not expose filtered column values.
+
+### Tools
+
+| Tool | Description |
+|---|---|
+| `list_physical_tables` | Lists all collections that have a physical SQL table for a given project. Returns `table_id`, `table_name`, `physical_table_name`, `description`, `row_count`, and `column_count`. |
+| `describe_physical_table` | Returns the full column schema (name, PostgreSQL type, nullable) and row count of a specific physical table. **Always call this before querying.** |
+| `query_physical_table` | Executes a structured read-only SELECT against a physical table. Supports filtering, ordering, and pagination. |
+
+### Recommended Workflow
+
+1. `list_catalogs` → get the `project_id`
+2. `list_physical_tables` with `project_id` → find the target table and note its `table_id`
+3. `describe_physical_table` with `table_id` → inspect available columns and their types
+4. `query_physical_table` with `table_id` + optional `filters`, `order_by`, `limit`, `offset` → fetch rows
+
+### `query_physical_table` Parameters
+
+| Parameter | Type | Description |
+|---|---|---|
+| `table_id` | string (required) | UUID of the catalog collection to query |
+| `filters` | object (optional) | A `FilterGroup` — `{ operator, conditions }`. Supports nested AND/OR groups. `operator`: `"and"` or `"or"`. `conditions`: list of `{ column, op, value }` or nested `FilterGroup`. |
+| `order_by` | string (optional) | Column name to sort by |
+| `order_dir` | `asc` \| `desc` (optional) | Sort direction (default: `asc`) |
+| `limit` | number (optional) | Max rows to return (default: `50`, max: `1000`) |
+| `offset` | number (optional) | Rows to skip for pagination (default: `0`) |
+
+**Multi-condition example with OR** — *"filter category is meals or software, date in February 2026, and taxable is false"*:
+```json
+{
+  "table_id": "...",
+  "filters": {
+    "operator": "and",
+    "conditions": [
+      {
+        "operator": "or",
+        "conditions": [
+          { "column": "txn_category_v1_0_0", "op": "ilike", "value": "meals" },
+          { "column": "txn_category_v1_0_0", "op": "ilike", "value": "software" }
+        ]
+      },
+      { "column": "txn_date_v1_0_0",    "op": "gte", "value": "2026-02-01" },
+      { "column": "txn_date_v1_0_0",    "op": "lte", "value": "2026-02-28" },
+      { "column": "txn_taxable_v1_0_0", "op": "eq",  "value": "false" }
+    ]
+  }
+}
+```
+
+> Never fetch all rows and filter the result in memory. Always push filter conditions into `filters` and let the database do the work.
+
+### Safety Rules
+- **Read-only**: These tools only perform SELECT queries. No INSERT, UPDATE, or DELETE is possible.
+- **Table whitelist**: The physical table name is always looked up from the database by `table_id` — it is never accepted directly from user input. This prevents SQL injection.
+- **Limit guard**: `limit > 1000` will be rejected by the backend with a `400` error.
+
+### When to Use
+- User asks to "query", "filter", "find", or "search" records in a catalog collection by column value
+- User wants to explore raw data in a collection (counts, specific column values, etc.)
+- User needs to verify data consistency between catalog metadata and physical rows
