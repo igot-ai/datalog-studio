@@ -78,13 +78,23 @@ Example:
 
 ## Physical Table Querying
 
-Catalog collections that are in `PROD` status have a backing PostgreSQL physical table. Three tools expose read-only access to these tables so the AI can query structured data directly.
+Every catalog collection has a backing PostgreSQL physical table, queryable regardless of its status (`DRAFT`, `PROD`, etc.). Three tools expose read-only access to these tables so the AI can query structured data directly.
+
+### Choosing the Right Tool for Data Retrieval
+
+Understanding **what the user is looking for** determines which tool to use:
+
+- **Source files and documents** — when the user wants to see the original uploaded files, their processing status, or raw content, use the asset tools (`list_assets`, `get_asset_content`, etc.). These tools operate on the source material.
+
+- **Extracted structured values** — when the user wants to find, filter, or explore the data that has been extracted and stored (e.g. "show me transactions from Starbucks", "find products where price is above 100", "get records where status is active"), the answer lives in the **physical SQL table**, not in the source files. Use `query_physical_table` for this intent.
+
+The key distinction is intent: asset tools answer *"what files were uploaded?"* while `query_physical_table` answers *"what is the data inside those files after extraction?"*. Conflating these two will produce results that look plausible but are factually incorrect, because asset listings do not expose filtered column values.
 
 ### Tools
 
 | Tool | Description |
 |---|---|
-| `list_physical_tables` | Lists all PROD collections that have a physical SQL table for a given project. Returns `table_id`, `table_name`, `physical_table_name`, `description`, `row_count`, and `column_count`. |
+| `list_physical_tables` | Lists all collections that have a physical SQL table for a given project. Returns `table_id`, `table_name`, `physical_table_name`, `description`, `row_count`, and `column_count`. |
 | `describe_physical_table` | Returns the full column schema (name, PostgreSQL type, nullable) and row count of a specific physical table. **Always call this before querying.** |
 | `query_physical_table` | Executes a structured read-only SELECT against a physical table. Supports filtering, ordering, and pagination. |
 
@@ -110,9 +120,8 @@ Catalog collections that are in `PROD` status have a backing PostgreSQL physical
 - **Read-only**: These tools only perform SELECT queries. No INSERT, UPDATE, or DELETE is possible.
 - **Table whitelist**: The physical table name is always looked up from the database by `table_id` — it is never accepted directly from user input. This prevents SQL injection.
 - **Limit guard**: `limit > 1000` will be rejected by the backend with a `400` error.
-- **DRAFT tables**: Tables with `status=DRAFT` have no physical table — these tools will return a `404` error. Inform the user and suggest promoting the table to `PROD` first.
 
 ### When to Use
-- User asks to "query", "filter", or "search" records in a catalog collection
+- User asks to "query", "filter", "find", or "search" records in a catalog collection by column value
 - User wants to explore raw data in a collection (counts, specific column values, etc.)
 - User needs to verify data consistency between catalog metadata and physical rows
