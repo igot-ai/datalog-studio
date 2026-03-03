@@ -74,3 +74,45 @@ Example:
 | product_id | text | Unique identifier for product |
 | ... | ... | ... |
 
+---
+
+## Physical Table Querying
+
+Catalog collections that are in `PROD` status have a backing PostgreSQL physical table. Three tools expose read-only access to these tables so the AI can query structured data directly.
+
+### Tools
+
+| Tool | Description |
+|---|---|
+| `list_physical_tables` | Lists all PROD collections that have a physical SQL table for a given project. Returns `table_id`, `table_name`, `physical_table_name`, `description`, `row_count`, and `column_count`. |
+| `describe_physical_table` | Returns the full column schema (name, PostgreSQL type, nullable) and row count of a specific physical table. **Always call this before querying.** |
+| `query_physical_table` | Executes a structured read-only SELECT against a physical table. Supports filtering, ordering, and pagination. |
+
+### Recommended Workflow
+
+1. `list_catalogs` → get the `project_id`
+2. `list_physical_tables` with `project_id` → find the target table and note its `table_id`
+3. `describe_physical_table` with `table_id` → inspect available columns and their types
+4. `query_physical_table` with `table_id` + optional `filters`, `order_by`, `limit`, `offset` → fetch rows
+
+### `query_physical_table` Parameters
+
+| Parameter | Type | Description |
+|---|---|---|
+| `table_id` | string (required) | UUID of the catalog collection to query |
+| `filters` | object (optional) | `{ column, op, value }` — filter rows. `op` values: `eq`, `neq`, `gt`, `lt`, `gte`, `lte`, `like`, `ilike`, `is_null`, `is_not_null` |
+| `order_by` | string (optional) | Column name to sort by |
+| `order_dir` | `asc` \| `desc` (optional) | Sort direction (default: `asc`) |
+| `limit` | number (optional) | Max rows to return (default: `50`, max: `1000`) |
+| `offset` | number (optional) | Rows to skip for pagination (default: `0`) |
+
+### Safety Rules
+- **Read-only**: These tools only perform SELECT queries. No INSERT, UPDATE, or DELETE is possible.
+- **Table whitelist**: The physical table name is always looked up from the database by `table_id` — it is never accepted directly from user input. This prevents SQL injection.
+- **Limit guard**: `limit > 1000` will be rejected by the backend with a `400` error.
+- **DRAFT tables**: Tables with `status=DRAFT` have no physical table — these tools will return a `404` error. Inform the user and suggest promoting the table to `PROD` first.
+
+### When to Use
+- User asks to "query", "filter", or "search" records in a catalog collection
+- User wants to explore raw data in a collection (counts, specific column values, etc.)
+- User needs to verify data consistency between catalog metadata and physical rows

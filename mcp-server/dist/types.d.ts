@@ -210,3 +210,39 @@ export interface CreateCatalogInvitationRequest {
     email: string;
     role_id: string;
 }
+export interface PhysicalTableEntry {
+    table_id: string;
+    table_name: string;
+    physical_table_name: string;
+    description: string;
+    row_count: number;
+    column_count: number;
+}
+export interface PhysicalTableSchema {
+    table_id: string;
+    physical_table_name: string;
+    columns: Array<{
+        name: string;
+        pg_type: string;
+        nullable: boolean;
+    }>;
+    row_count: number;
+}
+export interface PhysicalTableQueryParams {
+    filters?: {
+        column: string;
+        op: string;
+        value?: string;
+    };
+    order_by?: string;
+    order_dir?: 'asc' | 'desc';
+    limit?: number;
+    offset?: number;
+}
+export interface PhysicalTableQueryResult {
+    physical_table_name: string;
+    total: number;
+    limit: number;
+    offset: number;
+    rows: Record<string, any>[];
+}
