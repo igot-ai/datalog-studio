@@ -1044,22 +1044,26 @@ class DataStudioServer {
                   description: 'The UUID of the catalog collection to query',
                 },
                 filters: {
-                  type: 'array',
+                  type: 'object',
                   description:
-                    'List of filter conditions combined with AND logic. Each condition is { column, op, value }. op is one of: eq, neq, gt, lt, gte, lte, like, ilike, is_null, is_not_null. Pass all conditions in a single call instead of making multiple separate queries.',
-                  items: {
-                    type: 'object',
-                    properties: {
-                      column: { type: 'string', description: 'Column name to filter on' },
-                      op: {
-                        type: 'string',
-                        enum: ['eq', 'neq', 'gt', 'lt', 'gte', 'lte', 'like', 'ilike', 'is_null', 'is_not_null'],
-                        description: 'Comparison operator',
-                      },
-                      value: { type: 'string', description: 'Filter value (omit for is_null/is_not_null)' },
+                    'A FilterGroup — { operator, conditions }. operator is "and" or "or". conditions is a list of { column, op, value } leaf filters OR nested FilterGroup objects. Use nested groups to express OR within AND, e.g. (meals OR software) AND date AND taxable.',
+                  properties: {
+                    operator: {
+                      type: 'string',
+                      enum: ['and', 'or'],
+                      description: 'How to join conditions: "and" (all must match) or "or" (any must match)',
+                      default: 'and',
                     },
-                    required: ['column', 'op'],
+                    conditions: {
+                      type: 'array',
+                      description: 'List of filter conditions or nested FilterGroup objects',
+                      items: {
+                        type: 'object',
+                        description: 'Either a leaf filter { column, op, value } or a nested FilterGroup { operator, conditions }',
+                      },
+                    },
                   },
+                  required: ['operator', 'conditions'],
                 },
                 order_by: {
                   type: 'string',

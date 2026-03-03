@@ -266,8 +266,13 @@ export interface PhysicalTableQueryFilter {
   value?: string;
 }
 
+export interface PhysicalTableFilterGroup {
+  operator: 'and' | 'or';
+  conditions: Array<PhysicalTableQueryFilter | PhysicalTableFilterGroup>;
+}
+
 export interface PhysicalTableQueryParams {
-  filters?: PhysicalTableQueryFilter[];
+  filters?: PhysicalTableFilterGroup;
   order_by?: string;
   order_dir?: 'asc' | 'desc';
   limit?: number;

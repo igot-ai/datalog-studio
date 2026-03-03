@@ -110,22 +110,31 @@ The key distinction is intent: asset tools answer *"what files were uploaded?"* 
 | Parameter | Type | Description |
 |---|---|---|
 | `table_id` | string (required) | UUID of the catalog collection to query |
-| `filters` | array (optional) | List of filter conditions joined by AND logic. Each item is `{ column, op, value }`. Pass **all conditions together in one call**. `op` values: `eq`, `neq`, `gt`, `lt`, `gte`, `lte`, `like`, `ilike`, `is_null`, `is_not_null` |
+| `filters` | object (optional) | A `FilterGroup` — `{ operator, conditions }`. Supports nested AND/OR groups. `operator`: `"and"` or `"or"`. `conditions`: list of `{ column, op, value }` or nested `FilterGroup`. |
 | `order_by` | string (optional) | Column name to sort by |
 | `order_dir` | `asc` \| `desc` (optional) | Sort direction (default: `asc`) |
 | `limit` | number (optional) | Max rows to return (default: `50`, max: `1000`) |
 | `offset` | number (optional) | Rows to skip for pagination (default: `0`) |
 
-**Multi-condition example** — when a user says *"filter category is meals or software, date in February 2026, and taxable is false"*, pass all conditions together:
+**Multi-condition example with OR** — *"filter category is meals or software, date in February 2026, and taxable is false"*:
 ```json
 {
   "table_id": "...",
-  "filters": [
-    { "column": "txn_category_v1_0_0", "op": "ilike", "value": "meals" },
-    { "column": "txn_date_v1_0_0",     "op": "gte",   "value": "2026-02-01" },
-    { "column": "txn_date_v1_0_0",     "op": "lte",   "value": "2026-02-28" },
-    { "column": "txn_taxable_v1_0_0",  "op": "eq",    "value": "false" }
-  ]
+  "filters": {
+    "operator": "and",
+    "conditions": [
+      {
+        "operator": "or",
+        "conditions": [
+          { "column": "txn_category_v1_0_0", "op": "ilike", "value": "meals" },
+          { "column": "txn_category_v1_0_0", "op": "ilike", "value": "software" }
+        ]
+      },
+      { "column": "txn_date_v1_0_0",    "op": "gte", "value": "2026-02-01" },
+      { "column": "txn_date_v1_0_0",    "op": "lte", "value": "2026-02-28" },
+      { "column": "txn_taxable_v1_0_0", "op": "eq",  "value": "false" }
+    ]
+  }
 }
 ```
 

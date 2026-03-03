@@ -233,8 +233,12 @@ export interface PhysicalTableQueryFilter {
     op: 'eq' | 'neq' | 'gt' | 'lt' | 'gte' | 'lte' | 'like' | 'ilike' | 'is_null' | 'is_not_null';
     value?: string;
 }
+export interface PhysicalTableFilterGroup {
+    operator: 'and' | 'or';
+    conditions: Array<PhysicalTableQueryFilter | PhysicalTableFilterGroup>;
+}
 export interface PhysicalTableQueryParams {
-    filters?: PhysicalTableQueryFilter[];
+    filters?: PhysicalTableFilterGroup;
     order_by?: string;
     order_dir?: 'asc' | 'desc';
     limit?: number;
