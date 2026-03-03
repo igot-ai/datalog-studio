@@ -1012,7 +1012,7 @@ class DataStudioServer {
                     },
                     {
                         name: 'query_physical_table',
-                        description: 'Query rows from a physical SQL table backing a catalog collection. Supports filtering, ordering and pagination. Always call describe_physical_table first to know available column names.',
+                        description: 'Query rows from a physical SQL table backing a catalog collection. Pass ALL filter conditions together in the filters array — never fetch all rows to filter manually. Supports multiple AND conditions, ordering and pagination. Always call describe_physical_table first to know available column names.',
                         inputSchema: {
                             type: 'object',
                             properties: {
@@ -1021,17 +1021,21 @@ class DataStudioServer {
                                     description: 'The UUID of the catalog collection to query',
                                 },
                                 filters: {
-                                    type: 'object',
-                                    description: 'Optional filter: { column, op, value }. op is one of: eq, neq, gt, lt, gte, lte, like, ilike, is_null, is_not_null',
-                                    properties: {
-                                        column: { type: 'string', description: 'Column name to filter on' },
-                                        op: {
-                                            type: 'string',
-                                            enum: ['eq', 'neq', 'gt', 'lt', 'gte', 'lte', 'like', 'ilike', 'is_null', 'is_not_null'],
+                                    type: 'array',
+                                    description: 'List of filter conditions combined with AND logic. Each condition is { column, op, value }. op is one of: eq, neq, gt, lt, gte, lte, like, ilike, is_null, is_not_null. Pass all conditions in a single call instead of making multiple separate queries.',
+                                    items: {
+                                        type: 'object',
+                                        properties: {
+                                            column: { type: 'string', description: 'Column name to filter on' },
+                                            op: {
+                                                type: 'string',
+                                                enum: ['eq', 'neq', 'gt', 'lt', 'gte', 'lte', 'like', 'ilike', 'is_null', 'is_not_null'],
+                                                description: 'Comparison operator',
+                                            },
+                                            value: { type: 'string', description: 'Filter value (omit for is_null/is_not_null)' },
                                         },
-                                        value: { type: 'string', description: 'Filter value (omit for is_null/is_not_null)' },
+                                        required: ['column', 'op'],
                                     },
-                                    required: ['column', 'op'],
                                 },
                                 order_by: {
                                     type: 'string',

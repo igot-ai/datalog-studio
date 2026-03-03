@@ -110,11 +110,26 @@ The key distinction is intent: asset tools answer *"what files were uploaded?"* 
 | Parameter | Type | Description |
 |---|---|---|
 | `table_id` | string (required) | UUID of the catalog collection to query |
-| `filters` | object (optional) | `{ column, op, value }` — filter rows. `op` values: `eq`, `neq`, `gt`, `lt`, `gte`, `lte`, `like`, `ilike`, `is_null`, `is_not_null` |
+| `filters` | array (optional) | List of filter conditions joined by AND logic. Each item is `{ column, op, value }`. Pass **all conditions together in one call**. `op` values: `eq`, `neq`, `gt`, `lt`, `gte`, `lte`, `like`, `ilike`, `is_null`, `is_not_null` |
 | `order_by` | string (optional) | Column name to sort by |
 | `order_dir` | `asc` \| `desc` (optional) | Sort direction (default: `asc`) |
 | `limit` | number (optional) | Max rows to return (default: `50`, max: `1000`) |
 | `offset` | number (optional) | Rows to skip for pagination (default: `0`) |
+
+**Multi-condition example** — when a user says *"filter category is meals or software, date in February 2026, and taxable is false"*, pass all conditions together:
+```json
+{
+  "table_id": "...",
+  "filters": [
+    { "column": "txn_category_v1_0_0", "op": "ilike", "value": "meals" },
+    { "column": "txn_date_v1_0_0",     "op": "gte",   "value": "2026-02-01" },
+    { "column": "txn_date_v1_0_0",     "op": "lte",   "value": "2026-02-28" },
+    { "column": "txn_taxable_v1_0_0",  "op": "eq",    "value": "false" }
+  ]
+}
+```
+
+> Never fetch all rows and filter the result in memory. Always push filter conditions into `filters` and let the database do the work.
 
 ### Safety Rules
 - **Read-only**: These tools only perform SELECT queries. No INSERT, UPDATE, or DELETE is possible.

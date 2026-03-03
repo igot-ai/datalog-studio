@@ -260,8 +260,14 @@ export interface PhysicalTableSchema {
   row_count: number;
 }
 
+export interface PhysicalTableQueryFilter {
+  column: string;
+  op: 'eq' | 'neq' | 'gt' | 'lt' | 'gte' | 'lte' | 'like' | 'ilike' | 'is_null' | 'is_not_null';
+  value?: string;
+}
+
 export interface PhysicalTableQueryParams {
-  filters?: { column: string; op: string; value?: string };
+  filters?: PhysicalTableQueryFilter[];
   order_by?: string;
   order_dir?: 'asc' | 'desc';
   limit?: number;
