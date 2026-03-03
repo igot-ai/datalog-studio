@@ -137,6 +137,16 @@ Conflating these will produce results that look plausible but are factually inco
 }
 ```
 
+**Example — top N rows** — *"show me the top 5 most recent transactions"*: use `limit` + `order_by`. Never fetch all rows and slice in memory.
+```json
+{
+  "table_id": "...",
+  "order_by": "txn_date_v1_0_0",
+  "order_dir": "desc",
+  "limit": 5
+}
+```
+
 **Multi-condition example with OR** — *"filter category is meals or software, date in February 2026, and taxable is false"*:
 ```json
 {
