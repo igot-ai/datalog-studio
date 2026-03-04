@@ -130,44 +130,6 @@ class DataStudioServer {
             },
           },
           {
-            name: 'create_project',
-            description: 'Create a new data catalog project',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                name: {
-                  type: 'string',
-                  description: 'The slug of the project title (e.g., "my-project"). Length 2-64.',
-                  minLength: 2,
-                  maxLength: 64,
-                },
-                title: {
-                  type: 'string',
-                  description: 'The display title of the project',
-                },
-                description: {
-                  type: 'string',
-                  description: 'Optional description of the project',
-                },
-                project_type: {
-                  type: 'string',
-                  description: 'Type of project (DATA or ONTOLOGY)',
-                  enum: ['DATA', 'ONTOLOGY'],
-                },
-                domain: {
-                  type: 'string',
-                  description: 'Optional vertical domain or department',
-                },
-                tags: {
-                  type: 'array',
-                  items: { type: 'string' },
-                  description: 'Optional data tags',
-                },
-              },
-              required: ['name', 'title', 'project_type'],
-            },
-          },
-          {
             name: 'create_table',
             description: 'Create a new table within a specific catalog',
             inputSchema: {
