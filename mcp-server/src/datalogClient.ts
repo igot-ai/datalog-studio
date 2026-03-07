@@ -10,7 +10,7 @@ import {
   TableUpdateRequest,
   ColumnUpdateRequest,
   AssetColumnValueUpdateRequest,
-  CreateAssetsOptions,
+  CreateRecordOptions,
   AssetContent,
   TableFilesResponse,
   CreateProjectDTO,
@@ -152,17 +152,42 @@ export class DataStudioClient {
     return response.data;
   }
 
-  async ingestData(
+  /**
+   * Insert a new record (asset) into a collection.
+   *
+   * Endpoint: POST /upload/{catalogName}/{collectionName}  (multipart/form-data)
+   *
+   * - column_values: JSON string of { column_name: value | {} } for each column
+   * - upload_files:  optional file attachments (one or more)
+   * - plain_text:    optional raw text body for the asset
+   * - source_id:     optional external source identifier
+   */
+  async createRecord(
     catalogName: string,
     collectionName: string,
-    text: string,
-    transform: boolean = true,
+    options: CreateRecordOptions = {},
   ): Promise<any> {
     const form = new FormData();
-    form.append('plain_text', text);
+
+    // Attach files if provided
+    if (options.filePaths && options.filePaths.length > 0) {
+      for (const filePath of options.filePaths) {
+        form.append('upload_files', fs.createReadStream(filePath));
+      }
+    }
+
+    if (options.plainText) {
+      form.append('plain_text', options.plainText);
+    }
+    if (options.sourceId) {
+      form.append('source_id', options.sourceId);
+    }
+    if (options.columnValues && Object.keys(options.columnValues).length > 0) {
+      form.append('column_values', JSON.stringify(options.columnValues));
+    }
 
     const response = await this.client.post(`/upload/${catalogName}/${collectionName}`, form, {
-      params: { transform },
+      params: { transform: options.transform ?? true },
       headers: { ...form.getHeaders() },
     });
     return response.data;
@@ -214,33 +239,7 @@ export class DataStudioClient {
     return response.data;
   }
 
-  async createAssets(
-    tableId: string,
-    filePaths: string[] = [],
-    options: CreateAssetsOptions = {},
-  ): Promise<any> {
-    const form = new FormData();
 
-    for (const filePath of filePaths) {
-      form.append('upload_files', fs.createReadStream(filePath));
-    }
-
-    if (options.plainText) {
-      form.append('plain_text', options.plainText);
-    }
-    if (options.sourceId) {
-      form.append('source_id', options.sourceId);
-    }
-    if (options.columnStaticData) {
-      form.append('column_static_data', JSON.stringify(options.columnStaticData));
-    }
-
-    const response = await this.client.post(`/tables/${tableId}/assets`, form, {
-      params: { transform: options.transform ?? false },
-      headers: { ...form.getHeaders() },
-    });
-    return response.data;
-  }
 
   async deleteAsset(tableId: string, assetId: string): Promise<boolean> {
     const response = await this.client.delete(`/tables/${tableId}/assets/${assetId}`);

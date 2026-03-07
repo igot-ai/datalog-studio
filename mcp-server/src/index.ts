@@ -227,33 +227,7 @@ class DataStudioServer {
               required: ['catalog_name', 'collection_name'],
             },
           },
-          {
-            name: 'ingest_data',
-            description: 'Ingest plain text data into a catalog collection for master data processing',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                catalog_name: {
-                  type: 'string',
-                  description: 'Name of the catalog',
-                },
-                collection_name: {
-                  type: 'string',
-                  description: 'Name of the collection',
-                },
-                text: {
-                  type: 'string',
-                  description: 'Content to ingest',
-                },
-                transform: {
-                  type: 'boolean',
-                  description: 'Whether to trigger AI transformation immediately (default: true)',
-                  default: true,
-                },
-              },
-              required: ['catalog_name', 'collection_name', 'text'],
-            },
-          },
+
           {
             name: 'add_column',
             description: 'Add a new column to a catalog collection (by project/collection name)',
@@ -528,34 +502,46 @@ class DataStudioServer {
             },
           },
           {
-            name: 'create_assets',
-            description: 'Create assets in a table by uploading text or providing plain text content',
+            name: 'create_record',
+            description:
+              'Insert a new record (row) into a collection. ' +
+              'Call list_attributes first to learn the column names and types, ' +
+              'then supply column_values as a JSON object mapping each column name to its value.',
             inputSchema: {
               type: 'object',
               properties: {
-                table_id: {
+                catalog_name: {
                   type: 'string',
-                  description: 'The UUID of the table',
+                  description: 'Name of the catalog (project)',
+                },
+                collection_name: {
+                  type: 'string',
+                  description: 'Name of the collection (table)',
                 },
                 plain_text: {
                   type: 'string',
-                  description: 'Plain text content to ingest as an asset',
+                  description: 'Optional plain text content to associate with the record (used as the asset body)',
                 },
                 source_id: {
                   type: 'string',
-                  description: 'Optional source identifier',
+                  description: 'Optional external source identifier for the record',
                 },
-                column_static_data: {
+                column_values: {
                   type: 'object',
-                  description: 'Optional static data for columns (key-value pairs)',
+                  description:
+                    'Column values to set at creation time. ' +
+                    'Keys are column names (call list_attributes to discover them); values are the data for each column. ' +
+                    'For columns you want left empty / AI-extracted, pass an empty object {}. ' +
+                    'Example: { "id": "user_001", "name": "Alice", "segment_asia": {} }',
+                  additionalProperties: true,
                 },
                 transform: {
                   type: 'boolean',
-                  description: 'Whether to trigger AI transformation (default: false)',
-                  default: false,
+                  description: 'Whether to trigger AI transformation immediately after insert (default: true)',
+                  default: true,
                 },
               },
-              required: ['table_id'],
+              required: ['catalog_name', 'collection_name'],
             },
           },
           {
@@ -1281,17 +1267,7 @@ class DataStudioServer {
             };
           }
 
-          case 'ingest_data': {
-            const result = await this.dataClient.ingestData(
-              args?.catalog_name as string,
-              args?.collection_name as string,
-              args?.text as string,
-              args?.transform as boolean,
-            );
-            return {
-              content: [{ type: 'text', text: `Ingestion successful: ${JSON.stringify(result)}` }],
-            };
-          }
+
 
           case 'add_column': {
             const { catalog_name, collection_name, ...columnData } = args as any;
@@ -1371,19 +1347,19 @@ class DataStudioServer {
             };
           }
 
-          case 'create_assets': {
-            const result = await this.dataClient.createAssets(
-              args?.table_id as string,
-              [], // file paths not supported via MCP tool — use plain_text instead
+          case 'create_record': {
+            const result = await this.dataClient.createRecord(
+              args?.catalog_name as string,
+              args?.collection_name as string,
               {
-                plainText: args?.plain_text as string,
-                sourceId: args?.source_id as string,
-                columnStaticData: args?.column_static_data as Record<string, any>,
-                transform: args?.transform as boolean,
+                plainText: args?.plain_text as string | undefined,
+                sourceId: args?.source_id as string | undefined,
+                columnValues: args?.column_values as Record<string, any> | undefined,
+                transform: args?.transform as boolean | undefined,
               },
             );
             return {
-              content: [{ type: 'text', text: `Assets created: ${JSON.stringify(result)}` }],
+              content: [{ type: 'text', text: `Record inserted successfully: ${JSON.stringify(result)}` }],
             };
           }
 

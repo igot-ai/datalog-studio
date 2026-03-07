@@ -121,10 +121,13 @@ export interface AssetColumnValueUpdateRequest {
   value: string;
 }
 
-export interface CreateAssetsOptions {
+export interface CreateRecordOptions {
   plainText?: string;
   sourceId?: string;
-  columnStaticData?: Record<string, any>;
+  /** Per-column values to set at record creation time. Keys are column names, values are the data for that column. */
+  columnValues?: Record<string, any>;
+  /** Optional file paths to upload alongside the record. */
+  filePaths?: string[];
   transform?: boolean;
 }
 

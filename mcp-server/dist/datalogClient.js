@@ -79,11 +79,25 @@ export class DataStudioClient {
         });
         return response.data;
     }
-    async ingestData(catalogName, collectionName, text, transform = true) {
+    /**
+     * Insert a new record (asset) into a collection by name.
+     * Supply column_values as a map of { column_name: value } to pre-populate
+     * any column at creation time.
+     */
+    async createRecord(catalogName, collectionName, options = {}) {
         const form = new FormData();
-        form.append('plain_text', text);
+        if (options.plainText) {
+            form.append('plain_text', options.plainText);
+        }
+        if (options.sourceId) {
+            form.append('source_id', options.sourceId);
+        }
+        if (options.columnValues && Object.keys(options.columnValues).length > 0) {
+            // Send as a JSON string in the multipart field 'column_values'
+            form.append('column_values', JSON.stringify(options.columnValues));
+        }
         const response = await this.client.post(`/upload/${catalogName}/${collectionName}`, form, {
-            params: { transform },
+            params: { transform: options.transform ?? true },
             headers: { ...form.getHeaders() },
         });
         return response.data;
@@ -119,26 +133,6 @@ export class DataStudioClient {
     }
     async getAssetContent(tableId, assetId) {
         const response = await this.client.get(`/tables/${tableId}/assets/${assetId}`);
-        return response.data;
-    }
-    async createAssets(tableId, filePaths = [], options = {}) {
-        const form = new FormData();
-        for (const filePath of filePaths) {
-            form.append('upload_files', fs.createReadStream(filePath));
-        }
-        if (options.plainText) {
-            form.append('plain_text', options.plainText);
-        }
-        if (options.sourceId) {
-            form.append('source_id', options.sourceId);
-        }
-        if (options.columnStaticData) {
-            form.append('column_static_data', JSON.stringify(options.columnStaticData));
-        }
-        const response = await this.client.post(`/tables/${tableId}/assets`, form, {
-            params: { transform: options.transform ?? false },
-            headers: { ...form.getHeaders() },
-        });
         return response.data;
     }
     async deleteAsset(tableId, assetId) {

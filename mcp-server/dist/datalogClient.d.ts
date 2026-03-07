@@ -1,4 +1,4 @@
-import { Project, Table, Column, Asset, AddColumnRequest, TableUpdateRequest, ColumnUpdateRequest, AssetColumnValueUpdateRequest, CreateAssetsOptions, AssetContent, TableFilesResponse, CreateProjectDTO, CreateTableDTO, Skill, CreateSkillRequest, UpdateSkillRequest, ReloadSkillsResponse, ProjectMember, AssignProjectMemberRequest, UpdateProjectMemberRoleRequest, CreateCatalogInvitationRequest, PhysicalTableEntry, PhysicalTableSchema, PhysicalTableQueryParams, PhysicalTableQueryResult, PhysicalTableGroupByParams, PhysicalTableGroupByResult } from './types.js';
+import { Project, Table, Column, Asset, AddColumnRequest, TableUpdateRequest, ColumnUpdateRequest, AssetColumnValueUpdateRequest, CreateRecordOptions, AssetContent, TableFilesResponse, CreateProjectDTO, CreateTableDTO, Skill, CreateSkillRequest, UpdateSkillRequest, ReloadSkillsResponse, ProjectMember, AssignProjectMemberRequest, UpdateProjectMemberRoleRequest, CreateCatalogInvitationRequest, PhysicalTableEntry, PhysicalTableSchema, PhysicalTableQueryParams, PhysicalTableQueryResult, PhysicalTableGroupByParams, PhysicalTableGroupByResult } from './types.js';
 export declare class DataStudioClient {
     private client;
     constructor(apiKey: string, apiDomain: string, apiUri: string, session: string);
@@ -15,14 +15,18 @@ export declare class DataStudioClient {
     addColumns(catalogName: string, collectionName: string, columnsData: AddColumnRequest[]): Promise<any>;
     listDataAssets(catalogName: string, collectionName: string): Promise<Asset[]>;
     uploadFile(catalogName: string, collectionName: string, filePath: string, transform?: boolean): Promise<any>;
-    ingestData(catalogName: string, collectionName: string, text: string, transform?: boolean): Promise<any>;
+    /**
+     * Insert a new record (asset) into a collection by name.
+     * Supply column_values as a map of { column_name: value } to pre-populate
+     * any column at creation time.
+     */
+    createRecord(catalogName: string, collectionName: string, options?: CreateRecordOptions): Promise<any>;
     getTableJsonSchema(tableId: string): Promise<any>;
     updateTable(tableId: string, info: TableUpdateRequest): Promise<Table>;
     deleteTable(tableId: string): Promise<boolean>;
     listAssets(tableId: string, page?: number, limit?: number, status?: string, createdAtFrom?: string, createdAtTo?: string): Promise<Asset[]>;
     getAssetsCount(tableId: string): Promise<number>;
     getAssetContent(tableId: string, assetId: string): Promise<AssetContent>;
-    createAssets(tableId: string, filePaths?: string[], options?: CreateAssetsOptions): Promise<any>;
     deleteAsset(tableId: string, assetId: string): Promise<boolean>;
     getColumns(tableId: string): Promise<Column[]>;
     getColumnsCount(tableId: string): Promise<number>;
